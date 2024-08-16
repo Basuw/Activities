@@ -4,12 +4,13 @@ import ActivitySection from '../components/ActivitySection';
 import ActivityModel from '../models/ActivityModel';
 
 const screenWidth = Dimensions.get('window').width;
+const dayWidth = screenWidth / 5;
 
 const Activities = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [days, setDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     const generatedDays = DaysBeforeAndAfter(startDate);
@@ -18,7 +19,7 @@ const Activities = () => {
     setTimeout(() => {
       if (scrollViewRef.current) {
         const currentDayIndex = generatedDays.findIndex(day => day.fullDate === selectedDay);
-        scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - screenWidth / 2 + 30, animated: true });
+        scrollViewRef.current.scrollTo({ x: currentDayIndex * dayWidth - screenWidth / 2 + dayWidth / 2, animated: true });
       }
     }, 100);
   }, [startDate]);
@@ -28,7 +29,7 @@ const Activities = () => {
     console.log('Selected Day:', day.fullDate);
     if (scrollViewRef.current) {
       const currentDayIndex = days.findIndex(d => d.fullDate === day.fullDate);
-      scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - screenWidth / 2 + 30, animated: true });
+      scrollViewRef.current.scrollTo({ x: 2 * dayWidth + currentDayIndex * dayWidth - screenWidth / 2 + dayWidth / 2, animated: true });
     }
   };
 
@@ -40,7 +41,6 @@ const Activities = () => {
 
   const handleScroll = (event) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const dayWidth = 60; // Width of each day item
     const currentIndex = Math.round(offsetX / dayWidth);
     if (days[currentIndex]) {
       setSelectedDay(days[currentIndex].fullDate);
@@ -64,25 +64,24 @@ const Activities = () => {
           ref={scrollViewRef}
           onScroll={handleScroll}
           scrollEventThrottle={16}
-          snapToInterval={60}
+          snapToInterval={dayWidth}
           decelerationRate="fast"
         >
-          <View style={{ width: screenWidth / 2 - 30 }} />
+          <View style={{ width: screenWidth / 2 - dayWidth / 2 }} />
           {days.map((day, index) => (
             <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => handleDayClick(day)}>
               <Text style={[
                 styles.dayText,
                 day.fullDate === selectedDay && styles.selectedDayText,
-                (index === 0 || index === days.length - 1) && styles.transparentDayText
+                day.fullDate === new Date().toISOString().split('T')[0] && styles.currentDayText
               ]}>
                 {day.date}
               </Text>
               <Text style={styles.weekdayText}>{day.weekday}</Text>
             </TouchableOpacity>
           ))}
-          <View style={{ width: screenWidth / 2 - 30 }} />
+          <View style={{ width: screenWidth / 2 - dayWidth / 2 }} />
         </ScrollView>
-        <View style={styles.selectionBox} />
       </View>
       <ActivitySection title="Today's Activities" activities={sampleActivities} />
     </SafeAreaView>
@@ -124,7 +123,7 @@ const styles = StyleSheet.create({
   },
   dayContainer: {
     alignItems: 'center',
-    marginHorizontal: 10,
+    width: dayWidth,
   },
   dayText: {
     fontSize: 24,
@@ -147,18 +146,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
-  },
-  transparentDayText: {
-    opacity: 0.5,
-  },
-  selectionBox: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: screenWidth / 2 - 30,
-    width: 60,
-    borderColor: 'red',
-    borderWidth: 2,
   },
 });
 

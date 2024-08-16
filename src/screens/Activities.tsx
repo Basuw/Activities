@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, ScrollView, PanResponder } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import ActivitySection from '../components/ActivitySection';
 import ActivityModel from '../models/ActivityModel';
+
+const screenWidth = Dimensions.get('window').width;
 
 const Activities = () => {
   const [startDate, setStartDate] = useState(new Date());
@@ -16,13 +18,17 @@ const Activities = () => {
     setTimeout(() => {
       if (scrollViewRef.current) {
         const currentDayIndex = generatedDays.findIndex(day => day.fullDate === selectedDay);
-        scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - 120, animated: true });
+        scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - screenWidth / 2 + 30, animated: true });
       }
     }, 100);
   }, [startDate]);
 
   const handleDayClick = (day) => {
     setSelectedDay(day.fullDate);
+    if (scrollViewRef.current) {
+      const currentDayIndex = days.findIndex(d => d.fullDate === day.fullDate);
+      scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - screenWidth / 2 + 30, animated: true });
+    }
   };
 
   const getCurrentMonth = () => {
@@ -55,7 +61,10 @@ const Activities = () => {
         ref={scrollViewRef}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        snapToInterval={60}
+        decelerationRate="fast"
       >
+        <View style={{ width: screenWidth / 2 - 30 }} />
         {days.map((day, index) => (
           <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => handleDayClick(day)}>
             <Text style={[
@@ -68,6 +77,7 @@ const Activities = () => {
             <Text style={styles.weekdayText}>{day.weekday}</Text>
           </TouchableOpacity>
         ))}
+        <View style={{ width: screenWidth / 2 - 30 }} />
       </ScrollView>
       <ActivitySection title="Today's Activities" activities={sampleActivities} />
     </SafeAreaView>

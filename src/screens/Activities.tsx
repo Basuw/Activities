@@ -1,36 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+import React, { useState, useEffect, useRef } from 'react';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, ScrollView, PanResponder } from 'react-native';
 import ActivitySection from '../components/ActivitySection';
 import ActivityModel from '../models/ActivityModel';
 
 const Activities = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [days, setDays] = useState([]);
+  const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
+  const scrollViewRef = useRef(null);
 
   useEffect(() => {
-    setDays(DaysBeforeAndAfter(startDate, 5));
+    const generatedDays = DaysBeforeAndAfter(startDate);
+    setDays(generatedDays);
+    // Center the current day on initialization
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        const currentDayIndex = generatedDays.findIndex(day => day.fullDate === selectedDay);
+        scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - 120, animated: true });
+      }
+    }, 100);
   }, [startDate]);
 
   const handleDayClick = (day) => {
-    console.log(`Clicked day: ${day.fullDate}`);
-  };
-
-  const handleLeftArrowClick = () => {
-    const newStartDate = new Date(startDate);
-    newStartDate.setDate(startDate.getDate() - 5);
-    setStartDate(newStartDate);
-  };
-
-  const handleRightArrowClick = () => {
-    const newStartDate = new Date(startDate);
-    newStartDate.setDate(startDate.getDate() + 5);
-    setStartDate(newStartDate);
+    setSelectedDay(day.fullDate);
   };
 
   const getCurrentMonth = () => {
+    const selectedDate = new Date(selectedDay);
     const options = { month: 'long' };
-    return startDate.toLocaleDateString('en-US', options);
+    return selectedDate.toLocaleDateString('en-US', options);
+  };
+
+  const handleScroll = (event) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const dayWidth = 60; // Width of each day item
+    const currentIndex = Math.round(offsetX / dayWidth);
+    if (days[currentIndex]) {
+      setSelectedDay(days[currentIndex].fullDate);
+    }
   };
 
   const sampleActivities = [
@@ -41,35 +48,41 @@ const Activities = () => {
   return (
     <SafeAreaView style={styles.wrapper}>
       <Text style={styles.monthText}>{getCurrentMonth()}</Text>
-      <View style={styles.menu}>
-        <TouchableOpacity onPress={handleLeftArrowClick}>
-          <Feather name="arrow-left" size={24} color="black" />
-        </TouchableOpacity>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.menu}
+        ref={scrollViewRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {days.map((day, index) => (
           <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => handleDayClick(day)}>
-            <Text style={[styles.dayText, day.fullDate === new Date().toISOString().split('T')[0] && styles.currentDayText]}>
+            <Text style={[
+              styles.dayText,
+              day.fullDate === selectedDay && styles.selectedDayText,
+              (index === 0 || index === days.length - 1) && styles.transparentDayText
+            ]}>
               {day.date}
             </Text>
             <Text style={styles.weekdayText}>{day.weekday}</Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity onPress={handleRightArrowClick}>
-          <Feather name="arrow-right" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
       <ActivitySection title="Today's Activities" activities={sampleActivities} />
     </SafeAreaView>
   );
 };
 
-const DaysBeforeAndAfter = (startDate, range) => {
+const DaysBeforeAndAfter = (startDate) => {
   const days = [];
   const options = { weekday: 'short' };
-  const halfRange = Math.floor(range / 2);
+  const start = new Date(startDate);
+  start.setMonth(start.getMonth() - 1);
+  const end = new Date(startDate);
+  end.setMonth(end.getMonth() + 1);
 
-  for (let i = -halfRange; i <= halfRange; i++) {
-    const day = new Date(startDate);
-    day.setDate(startDate.getDate() + i);
+  for (let day = new Date(start); day <= end; day.setDate(day.getDate() + 1)) {
     days.push({
       date: day.getDate(),
       weekday: day.toLocaleDateString('en-US', options),
@@ -89,16 +102,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '10%',
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
     backgroundColor: 'white',
   },
   dayContainer: {
     alignItems: 'center',
+    marginHorizontal: 10,
   },
   dayText: {
     fontSize: 24,
     color: 'black',
+  },
+  selectedDayText: {
+    color: 'blue',
+    fontSize: 28,
   },
   currentDayText: {
     color: 'red',
@@ -113,6 +129,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
+  },
+  transparentDayText: {
+    opacity: 0.5,
   },
 });
 

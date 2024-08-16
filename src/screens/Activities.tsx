@@ -25,6 +25,7 @@ const Activities = () => {
 
   const handleDayClick = (day) => {
     setSelectedDay(day.fullDate);
+    console.log('Selected Day:', day.fullDate);
     if (scrollViewRef.current) {
       const currentDayIndex = days.findIndex(d => d.fullDate === day.fullDate);
       scrollViewRef.current.scrollTo({ x: currentDayIndex * 60 - screenWidth / 2 + 30, animated: true });
@@ -43,6 +44,7 @@ const Activities = () => {
     const currentIndex = Math.round(offsetX / dayWidth);
     if (days[currentIndex]) {
       setSelectedDay(days[currentIndex].fullDate);
+      console.log('Selected Day:', days[currentIndex].fullDate);
     }
   };
 
@@ -54,31 +56,34 @@ const Activities = () => {
   return (
     <SafeAreaView style={styles.wrapper}>
       <Text style={styles.monthText}>{getCurrentMonth()}</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.menu}
-        ref={scrollViewRef}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        snapToInterval={60}
-        decelerationRate="fast"
-      >
-        <View style={{ width: screenWidth / 2 - 30 }} />
-        {days.map((day, index) => (
-          <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => handleDayClick(day)}>
-            <Text style={[
-              styles.dayText,
-              day.fullDate === selectedDay && styles.selectedDayText,
-              (index === 0 || index === days.length - 1) && styles.transparentDayText
-            ]}>
-              {day.date}
-            </Text>
-            <Text style={styles.weekdayText}>{day.weekday}</Text>
-          </TouchableOpacity>
-        ))}
-        <View style={{ width: screenWidth / 2 - 30 }} />
-      </ScrollView>
+      <View style={styles.scrollContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.menu}
+          ref={scrollViewRef}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          snapToInterval={60}
+          decelerationRate="fast"
+        >
+          <View style={{ width: screenWidth / 2 - 30 }} />
+          {days.map((day, index) => (
+            <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => handleDayClick(day)}>
+              <Text style={[
+                styles.dayText,
+                day.fullDate === selectedDay && styles.selectedDayText,
+                (index === 0 || index === days.length - 1) && styles.transparentDayText
+              ]}>
+                {day.date}
+              </Text>
+              <Text style={styles.weekdayText}>{day.weekday}</Text>
+            </TouchableOpacity>
+          ))}
+          <View style={{ width: screenWidth / 2 - 30 }} />
+        </ScrollView>
+        <View style={styles.selectionBox} />
+      </View>
       <ActivitySection title="Today's Activities" activities={sampleActivities} />
     </SafeAreaView>
   );
@@ -107,6 +112,9 @@ const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: 'lightgrey',
     flex: 1,
+  },
+  scrollContainer: {
+    position: 'relative',
   },
   menu: {
     width: '100%',
@@ -142,6 +150,15 @@ const styles = StyleSheet.create({
   },
   transparentDayText: {
     opacity: 0.5,
+  },
+  selectionBox: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: screenWidth / 2 - 30,
+    width: 60,
+    borderColor: 'red',
+    borderWidth: 2,
   },
 });
 

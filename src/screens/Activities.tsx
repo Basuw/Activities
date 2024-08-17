@@ -1,8 +1,18 @@
 import React, {useState, useRef} from 'react';
-import {SafeAreaView, StyleSheet, Text} from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import ActivitySection from '../components/ActivitySection';
 import ActivityModel from '../models/Activities/ActivityModel';
 import DayMenu from '../components/ DaysMenu';
+
+const screenWidth = Dimensions.get('window').width;
+const dayWidth = screenWidth / 5;
 
 const Activities = () => {
   const [selectedDay, setSelectedDay] = useState(

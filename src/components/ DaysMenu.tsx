@@ -28,7 +28,11 @@ const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
     const end = new Date(startDate);
     end.setMonth(end.getMonth() + 1);
 
-    for (let day = new Date(start); day <= end; day.setDate(day.getDate() + 1)) {
+    for (
+      let day = new Date(start);
+      day <= end;
+      day.setDate(day.getDate() + 1)
+    ) {
       days.push({
         date: day.getDate(),
         weekday: day.toLocaleDateString('en-US', options),
@@ -43,9 +47,20 @@ const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
     const startDate = new Date();
     const generatedDays = DaysBeforeAndAfter(startDate);
     setDays(generatedDays);
+
+    // Center the current day as the 3rd element on initialization
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        const currentDayIndex = generatedDays.findIndex(
+          day => day.fullDate === new Date().toISOString().split('T')[0],
+        );
+        const offset = currentDayIndex * dayWidth; // Adjust to center as the 3rd element
+        scrollViewRef.current.scrollTo({x: offset, animated: true});
+      }
+    }, 100);
   }, []);
 
-  const handleDayClick = (day) => {
+  const handleDayClick = day => {
     onDaySelect(day.fullDate);
 
     if (scrollViewRef.current) {
@@ -55,7 +70,7 @@ const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
     }
   };
 
-  const handleScroll = (event) => {
+  const handleScroll = event => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const currentIndex = Math.round(offsetX / dayWidth);
     if (days[currentIndex]) {

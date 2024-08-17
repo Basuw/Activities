@@ -1,5 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import ActivitySection from '../components/ActivitySection';
 import ActivityModel from '../models/ActivityModel';
 
@@ -7,9 +15,11 @@ const screenWidth = Dimensions.get('window').width;
 const dayWidth = screenWidth / 5;
 
 const Activities = () => {
-  const [startDate, setStartDate] = useState(new Date());
+  const [startDate] = useState(new Date());
   const [days, setDays] = useState([]);
-  const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDay, setSelectedDay] = useState(
+    new Date().toISOString().split('T')[0],
+  );
   const scrollViewRef = useRef<ScrollView>(null);
   const logTimeoutRef = useRef(null);
 
@@ -19,14 +29,16 @@ const Activities = () => {
     // Center the current day as the 3rd element on initialization
     setTimeout(() => {
       if (scrollViewRef.current) {
-        const currentDayIndex = generatedDays.findIndex(day => day.fullDate === selectedDay);
+        const currentDayIndex = generatedDays.findIndex(
+          day => day.fullDate === selectedDay,
+        );
         const offset = (currentDayIndex - 2) * dayWidth + 2 * dayWidth; // Adjust to center as the 3rd element
-        scrollViewRef.current.scrollTo({ x: offset, animated: true });
+        scrollViewRef.current.scrollTo({x: offset, animated: true});
       }
     }, 100);
   }, [startDate]);
 
-  const handleDayClick = (day) => {
+  const handleDayClick = day => {
     setSelectedDay(day.fullDate);
 
     if (logTimeoutRef.current) {
@@ -40,17 +52,17 @@ const Activities = () => {
     if (scrollViewRef.current) {
       const currentDayIndex = days.findIndex(d => d.fullDate === day.fullDate);
       const offset = (currentDayIndex - 2) * dayWidth + 2 * dayWidth; // Adjust to center as the 3rd element
-      scrollViewRef.current.scrollTo({ x: offset, animated: true });
+      scrollViewRef.current.scrollTo({x: offset, animated: true});
     }
   };
 
   const getCurrentMonth = () => {
     const selectedDate = new Date(selectedDay);
-    const options = { month: 'long' };
+    const options = {month: 'long'};
     return selectedDate.toLocaleDateString('en-US', options);
   };
 
-  const handleScroll = (event) => {
+  const handleScroll = event => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const currentIndex = Math.round(offsetX / dayWidth);
     if (days[currentIndex]) {
@@ -67,8 +79,24 @@ const Activities = () => {
   };
 
   const sampleActivities = [
-    new ActivityModel(1, 'Running', 'run-icon', 'km', 'Morning run', 'Fitness', 123),
-    new ActivityModel(2, 'Swimming', 'swim-icon', 'laps', 'Evening swim', 'Fitness', 124),
+    new ActivityModel(
+      1,
+      'Running',
+      'run-icon',
+      'km',
+      'Morning run',
+      'Fitness',
+      123,
+    ),
+    new ActivityModel(
+      2,
+      'Swimming',
+      'swim-icon',
+      'laps',
+      'Evening swim',
+      'Fitness',
+      124,
+    ),
   ];
 
   return (
@@ -83,32 +111,39 @@ const Activities = () => {
           onScroll={handleScroll}
           scrollEventThrottle={16}
           snapToInterval={dayWidth}
-          decelerationRate="fast"
-        >
-          <View style={{ width: screenWidth / 2 - dayWidth / 2 }} />
+          decelerationRate="fast">
+          <View style={{width: screenWidth / 2 - dayWidth / 2}} />
           {days.map((day, index) => (
-            <TouchableOpacity key={index} style={styles.dayContainer} onPress={() => handleDayClick(day)}>
-              <Text style={[
-                styles.dayText,
-                day.fullDate === selectedDay && styles.selectedDayText,
-                day.fullDate === new Date().toISOString().split('T')[0] && styles.currentDayText
-              ]}>
+            <TouchableOpacity
+              key={index}
+              style={styles.dayContainer}
+              onPress={() => handleDayClick(day)}>
+              <Text
+                style={[
+                  styles.dayText,
+                  day.fullDate === selectedDay && styles.selectedDayText,
+                  day.fullDate === new Date().toISOString().split('T')[0] &&
+                    styles.currentDayText,
+                ]}>
                 {day.date}
               </Text>
               <Text style={styles.weekdayText}>{day.weekday}</Text>
             </TouchableOpacity>
           ))}
-          <View style={{ width: screenWidth / 2 - dayWidth / 2 }} />
+          <View style={{width: screenWidth / 2 - dayWidth / 2}} />
         </ScrollView>
       </View>
-      <ActivitySection title="Today's Activities" activities={sampleActivities} />
+      <ActivitySection
+        title="Today's Activities"
+        activities={sampleActivities}
+      />
     </SafeAreaView>
   );
 };
 
-const DaysBeforeAndAfter = (startDate) => {
+const DaysBeforeAndAfter = startDate => {
   const days = [];
-  const options = { weekday: 'short' };
+  const options = {weekday: 'short'};
   const start = new Date(startDate);
   start.setMonth(start.getMonth() - 1);
   const end = new Date(startDate);

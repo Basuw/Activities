@@ -11,25 +11,36 @@ const Activities = () => {
   const [days, setDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
   const scrollViewRef = useRef<ScrollView>(null);
+  const logTimeoutRef = useRef(null);
 
   useEffect(() => {
     const generatedDays = DaysBeforeAndAfter(startDate);
     setDays(generatedDays);
-    // Center the current day on initialization
+    // Center the current day as the 3rd element on initialization
     setTimeout(() => {
       if (scrollViewRef.current) {
         const currentDayIndex = generatedDays.findIndex(day => day.fullDate === selectedDay);
-        scrollViewRef.current.scrollTo({ x: currentDayIndex * dayWidth - screenWidth / 2 + dayWidth / 2, animated: true });
+        const offset = (currentDayIndex - 2) * dayWidth + 2 * dayWidth; // Adjust to center as the 3rd element
+        scrollViewRef.current.scrollTo({ x: offset, animated: true });
       }
     }, 100);
   }, [startDate]);
 
   const handleDayClick = (day) => {
     setSelectedDay(day.fullDate);
-    console.log('Selected Day:', day.fullDate);
+
+    if (logTimeoutRef.current) {
+      clearTimeout(logTimeoutRef.current);
+    }
+
+    logTimeoutRef.current = setTimeout(() => {
+      console.log(`Selected Day: ${day.fullDate}`);
+    }, 200); // Adjust the delay as needed
+
     if (scrollViewRef.current) {
       const currentDayIndex = days.findIndex(d => d.fullDate === day.fullDate);
-      scrollViewRef.current.scrollTo({ x: 2 * dayWidth + currentDayIndex * dayWidth - screenWidth / 2 + dayWidth / 2, animated: true });
+      const offset = (currentDayIndex - 2) * dayWidth + 2 * dayWidth; // Adjust to center as the 3rd element
+      scrollViewRef.current.scrollTo({ x: offset, animated: true });
     }
   };
 
@@ -44,7 +55,14 @@ const Activities = () => {
     const currentIndex = Math.round(offsetX / dayWidth);
     if (days[currentIndex]) {
       setSelectedDay(days[currentIndex].fullDate);
-      console.log('Selected Day:', days[currentIndex].fullDate);
+
+      if (logTimeoutRef.current) {
+        clearTimeout(logTimeoutRef.current);
+      }
+
+      logTimeoutRef.current = setTimeout(() => {
+        console.log(`Selected Day: ${days[currentIndex].fullDate}`);
+      }, 500); // Adjust the delay as needed
     }
   };
 
@@ -135,7 +153,6 @@ const styles = StyleSheet.create({
   },
   currentDayText: {
     color: 'red',
-    fontSize: 28,
   },
   weekdayText: {
     fontSize: 16,

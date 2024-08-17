@@ -1,14 +1,23 @@
-import {View, StyleSheet} from 'react-native';
+import { StyleSheet} from 'react-native';
 import React from 'react';
 import Activities from './src/screens/Activities.tsx';
+import Profil from './src/screens/Profil.tsx';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {NavigationContainer} from '@react-navigation/native';
+
+const Stack = createNativeStackNavigator();
+
 const app = () => {
   return (
-    <View style={styles.container}>
-      <Activities />
-    </View>
+  <NavigationContainer>
+    <Tab.Navigator>
+      <Stack.Screen name="Activities" component={Activities} options={{headerShown:false}} />
+      <Stack.Screen name="Profil" component={Profil} options={{headerShown:false}}/>
+    </Tab.Navigator>
+  </NavigationContainer>
   );
 };
-const styles = StyleSheet.create({
+StyleSheet.create({
   container: {
     flex: 1,
   },

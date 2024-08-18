@@ -1,13 +1,13 @@
-import {Text, View, StyleSheet, Image} from 'react-native';
+import {Text, View, StyleSheet,} from 'react-native';
 import React from 'react';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
 }
 
 const Activity: React.FC<ActivityProps> = ({activity}) => {
-  const icon = require('../../assets/icons/activities/running.png');
   return (
     <View style={styles.container}>
       <View style={styles.leftContainer}>
@@ -19,9 +19,7 @@ const Activity: React.FC<ActivityProps> = ({activity}) => {
         <Text>{activity.weekObjective}/{activity.activityDone.activitySave.frequency}</Text>
       </View>
       <View style={styles.rightContainer}>
-        <Image
-            source={icon} style={styles.icon}
-        />
+        <MaterialCommunityIcons name={activity.activityDone.activitySave.activity.icon} size={24} color="black" />
       </View>
     </View>
   );

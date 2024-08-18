@@ -118,10 +118,12 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   menu: {
+    paddingTop: 5,
     width: '100%',
     height: '10%',
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: '#383838',
+    borderRadius: 10,
   },
   dayContainer: {
     alignItems: 'center',
@@ -132,11 +134,11 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   selectedDayText: {
-    color: 'blue',
+    color: '#382bf0',
     fontSize: 28,
   },
   currentDayText: {
-    color: 'red',
+    color: '#f44336',
   },
   weekdayText: {
     fontSize: 16,

@@ -5,8 +5,8 @@ import {
   Text,
 } from 'react-native';
 import ActivitySection from '../components/ActivitySection';
-import ActivityModel from '../models/Activities/ActivityModel.ts';
 import DayMenu from '../components/ DaysMenu';
+import StubService from '../services/stub.ts';
 
 
 const Activities = () => {
@@ -33,33 +33,15 @@ const Activities = () => {
     return selectedDate.toLocaleDateString('en-US', options);
   };
 
-  const sampleActivities = [
-    new ActivityModel(
-      1,
-      'Running',
-      'run-icon',
-      'km',
-      'Morning run',
-      'Fitness',
-      123,
-    ),
-    new ActivityModel(
-      2,
-      'Swimming',
-      'swim-icon',
-      'laps',
-      'Evening swim',
-      'Fitness',
-      124,
-    ),
-  ];
+  const stubService = new StubService();
+  const sampleActivities = stubService.activitiesProgress;
 
   return (
     <SafeAreaView style={styles.wrapper}>
       <Text style={styles.monthText}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
       <ActivitySection
-        title="Today's Activities"
+        title="Morning Activities"
         activities={sampleActivities}
       />
     </SafeAreaView>
@@ -68,7 +50,7 @@ const Activities = () => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: 'lightgrey',
+    backgroundColor: '#232323',
     flex: 1,
   },
   monthText: {

@@ -1,11 +1,11 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Activity from './Activity';
-import ActivityModel from '../models/ActivityModel';
+import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
 
 interface ActivitySectionProps {
   title: string;
-  activities: ActivityModel[];
+  activities: ActivityProgressModel[];
 }
 
 const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities}) => {
@@ -13,7 +13,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities}) =>
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       {activities.map((activity) => (
-        <Activity key={activity.id} activity={activity} />
+        <Activity key={activity.activityDone.id} activity={activity} />
       ))}
     </View>
   );
@@ -22,8 +22,9 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities}) =>
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: 'white',
+    backgroundColor: '#383838',
     marginTop: 10,
+    borderRadius: 25,
   },
   title: {
     fontSize: 20,

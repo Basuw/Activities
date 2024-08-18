@@ -1,12 +1,12 @@
-import ActivitySaveModel from './ActivitySaveModel';
+import ActivityDoneModel from "./ActivityDoneModel.ts";
 
 class ActivityProgressModel {
-  activitySave: ActivitySaveModel;
+  activityDone: ActivityDoneModel;
   weekProgress: number;
   weekObjective: number;
 
-  constructor(activitySave: ActivitySaveModel, weekProgress: number, weekObjective: number) {
-    this.activitySave = activitySave;
+  constructor(activityDone: ActivityDoneModel, weekProgress: number, weekObjective: number) {
+    this.activityDone = activityDone;
     this.weekProgress = weekProgress;
     this.weekObjective = weekObjective;
   }

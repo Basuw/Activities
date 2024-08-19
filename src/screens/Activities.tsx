@@ -5,11 +5,12 @@ import {
   Text,
 } from 'react-native';
 import ActivitySection from '../components/ActivitySection';
-import DayMenu from '../components/ DaysMenu';
+import DayMenu from '../components/DaysMenu';
 import StubService from '../services/stub.ts';
-
+import {useTheme} from 'styled-components';
 
 const Activities = () => {
+  const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState(
     new Date().toISOString().split('T')[0],
   );
@@ -37,8 +38,8 @@ const Activities = () => {
   const sampleActivities = stubService.activitiesProgress;
 
   return (
-    <SafeAreaView style={styles.wrapper}>
-      <Text style={styles.monthText}>{getCurrentMonth()}</Text>
+    <SafeAreaView style={[styles.wrapper, {backgroundColor: theme.background}]}>
+      <Text style={[styles.monthText, {color: theme.foreground}]}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
       <ActivitySection
         title="Morning Activities"
@@ -50,7 +51,6 @@ const Activities = () => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: '#232323',
     flex: 1,
   },
   monthText: {

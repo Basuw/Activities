@@ -2,6 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Activity from './Activity';
 import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
+import {useTheme} from 'styled-components';
 
 interface ActivitySectionProps {
   title: string;
@@ -9,9 +10,11 @@ interface ActivitySectionProps {
 }
 
 const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities}) => {
+  const theme = useTheme();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+    <View style={[styles.container, {backgroundColor: theme.viewColor}]}>
+      <Text style={[styles.title, {color: theme.foreground}]}>{title}</Text>
       {activities.map((activity) => (
         <Activity key={activity.activityDone.id} activity={activity} />
       ))}
@@ -22,7 +25,6 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities}) =>
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: '#383838',
     marginTop: 10,
     borderRadius: 25,
   },

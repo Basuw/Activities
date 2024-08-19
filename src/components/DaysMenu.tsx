@@ -7,6 +7,7 @@ import {
   Dimensions,
   StyleSheet,
 } from 'react-native';
+import {useTheme} from 'styled-components';
 
 const screenWidth = Dimensions.get('window').width;
 const dayWidth = screenWidth / 5;
@@ -17,6 +18,7 @@ interface DayMenuProps {
 }
 
 const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
+  const theme = useTheme();
   const [days, setDays] = useState([]);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -79,7 +81,7 @@ const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
   };
 
   return (
-    <View style={styles.scrollContainer}>
+    <View style={[styles.scrollContainer, {backgroundColor: theme.viewColor}]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -98,13 +100,16 @@ const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
             <Text
               style={[
                 styles.dayText,
+                {color: theme.foreground},
                 day.fullDate === selectedDay && styles.selectedDayText,
                 day.fullDate === new Date().toISOString().split('T')[0] &&
                   styles.currentDayText,
               ]}>
               {day.date}
             </Text>
-            <Text style={styles.weekdayText}>{day.weekday}</Text>
+            <Text style={[styles.weekdayText, {color: theme.foreground}]}>
+              {day.weekday}
+            </Text>
           </TouchableOpacity>
         ))}
         <View style={{width: screenWidth / 2 - dayWidth / 2}} />
@@ -122,7 +127,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '10%',
     flexDirection: 'row',
-    backgroundColor: '#383838',
     borderRadius: 10,
   },
   dayContainer: {
@@ -131,7 +135,6 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 24,
-    color: 'black',
   },
   selectedDayText: {
     color: '#382bf0',
@@ -142,7 +145,6 @@ const styles = StyleSheet.create({
   },
   weekdayText: {
     fontSize: 16,
-    color: 'black',
   },
 });
 

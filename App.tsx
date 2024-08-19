@@ -9,6 +9,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {ThemeProvider} from 'styled-components';
 // @ts-ignore
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const darkTheme = {
     background: '#282828',
@@ -17,7 +18,7 @@ const darkTheme = {
     subViewColor: '#575757',
     buttonColor: '#282828',
     buttonTextColor: 'white',
-    purple: '#382bf0',
+    purple: '#5e43f3',
     orange: '#f44336',
 };
 const lightTheme = {
@@ -39,31 +40,33 @@ const App: React.JSX.Element = () => {
   //const [theme, setTheme] = useTheme();
     const scheme = useColorScheme();
     return (
-      <ThemeProvider theme={scheme === 'dark' ? darkTheme : lightTheme}>
-          <NavigationContainer >
-              <Tab.Navigator
-                  screenOptions={({ route }) => ({
-                      tabBarIcon: ({ focused, color, size }) => {
-                          let iconName;
-                          if (route.name === 'Activities') {
-                              iconName = 'tasks';
-                          } else if (route.name === 'Profil') {
-                              iconName = focused ? 'user-alt' : 'user';
-                          }
-                          return <FontAwesome5 name={iconName} size={size} color={color} />;
-                      },
-                      tabBarActiveTintColor: '#f44336',
-                      tabBarInactiveTintColor: 'gray',
-                      tabBarStyle: {
-                          backgroundColor: scheme === 'dark' ? darkTheme.viewColor : lightTheme.viewColor,
-                      },
-                  })}
-              >
-                  <Tab.Screen name="Activities" component={Activities} options={{ tabBarBadge:2, headerShown: false }} />
-                  <Tab.Screen name="Profil" component={Profil} options={{ headerShown: false }} />
-              </Tab.Navigator>
-          </NavigationContainer>
-      </ThemeProvider>
+        <GestureHandlerRootView>
+            <ThemeProvider theme={scheme === 'dark' ? darkTheme : lightTheme}>
+                <NavigationContainer >
+                    <Tab.Navigator
+                        screenOptions={({ route }) => ({
+                            tabBarIcon: ({ focused, color, size }) => {
+                                let iconName;
+                                if (route.name === 'Activities') {
+                                    iconName = 'tasks';
+                                } else if (route.name === 'Profil') {
+                                    iconName = focused ? 'user-alt' : 'user';
+                                }
+                                return <FontAwesome5 name={iconName} size={size} color={color} />;
+                            },
+                            tabBarActiveTintColor: '#f44336',
+                            tabBarInactiveTintColor: 'gray',
+                            tabBarStyle: {
+                                backgroundColor: scheme === 'dark' ? darkTheme.viewColor : lightTheme.viewColor,
+                            },
+                        })}
+                    >
+                        <Tab.Screen name="Activities" component={Activities} options={{ tabBarBadge:2, headerShown: false }} />
+                        <Tab.Screen name="Profil" component={Profil} options={{ headerShown: false }} />
+                    </Tab.Navigator>
+                </NavigationContainer>
+            </ThemeProvider>
+        </GestureHandlerRootView>
   );
 };
 StyleSheet.create({

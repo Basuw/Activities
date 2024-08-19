@@ -101,9 +101,9 @@ const DayMenu: React.FC<DayMenuProps> = ({selectedDay, onDaySelect}) => {
               style={[
                 styles.dayText,
                 {color: theme.foreground},
-                day.fullDate === selectedDay && styles.selectedDayText,
+                day.fullDate === selectedDay && {color: theme.purple, fontSize: 28},
                 day.fullDate === new Date().toISOString().split('T')[0] &&
-                  styles.currentDayText,
+                  {color: theme.orange},
               ]}>
               {day.date}
             </Text>
@@ -135,13 +135,6 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 24,
-  },
-  selectedDayText: {
-    color: '#382bf0',
-    fontSize: 28,
-  },
-  currentDayText: {
-    color: '#f44336',
   },
   weekdayText: {
     fontSize: 16,

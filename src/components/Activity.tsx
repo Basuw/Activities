@@ -7,29 +7,78 @@ import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
-  onSwipeLeft: () => void;
-  onSwipeRight: () => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
+  onExtraLeftButton1?: () => void;
+  onExtraLeftButton2?: () => void;
+  onExtraRightButton1?: () => void;
+  onExtraRightButton2?: () => void;
 }
 
-const Activity: React.FC<ActivityProps> = ({activity, onSwipeLeft, onSwipeRight}) => {
+const Activity: React.FC<ActivityProps> = ({
+  activity,
+  onSwipeLeft = () => {},
+  onSwipeRight = () => {},
+  onExtraLeftButton1 = () => {},
+  onExtraLeftButton2 = () => {},
+  onExtraRightButton1 = () => {},
+  onExtraRightButton2 = () => {},
+}) => {
   const theme = useTheme();
 
+  const handleSwipeLeft = () => {
+    console.log('Swiped left');
+    onSwipeLeft();
+  };
+
+  const handleSwipeRight = () => {
+    console.log('Swiped right');
+    onSwipeRight();
+  };
+
+  const logButtonPress = (message: string, callback: () => void) => {
+    console.log(message);
+    callback();
+  };
+
   const renderLeftActions = () => (
-    <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'green'}]} onPress={onSwipeLeft}>
-      <MaterialCommunityIcons name="check" size={24} color="white" />
-    </TouchableOpacity>
+    <View style={styles.actionContainer}>
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'blue'}]} onPress={() => logButtonPress('Extra Left Button 1 Pressed', onExtraLeftButton1)}>
+          <MaterialCommunityIcons name="star" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'purple'}]} onPress={() => logButtonPress('Extra Left Button 2 Pressed', onExtraLeftButton2)}>
+          <MaterialCommunityIcons name="heart" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'green'}]} onPress={() => logButtonPress('Left Button Pressed', onSwipeLeft)}>
+          <MaterialCommunityIcons name="check" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   const renderRightActions = () => (
-    <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'red'}]} onPress={onSwipeRight}>
-      <MaterialCommunityIcons name="close" size={24} color="white" />
-    </TouchableOpacity>
+    <View style={styles.actionContainer}>
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'orange'}]} onPress={() => logButtonPress('Extra Right Button 1 Pressed', onExtraRightButton1)}>
+          <MaterialCommunityIcons name="alert" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'yellow'}]} onPress={() => logButtonPress('Extra Right Button 2 Pressed', onExtraRightButton2)}>
+          <MaterialCommunityIcons name="bell" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'red'}]} onPress={() => logButtonPress('Right Button Pressed', onSwipeRight)}>
+          <MaterialCommunityIcons name="close" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   return (
     <Swipeable
       renderLeftActions={renderLeftActions}
       renderRightActions={renderRightActions}
+      onSwipeableWillOpen={handleSwipeLeft}
+      onSwipeableWillClose={handleSwipeRight}
     >
       <View style={[styles.container, {backgroundColor: theme.subViewColor}]}>
         <View style={styles.leftContainer}>
@@ -56,6 +105,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     borderRadius: 10,
+    overflow: 'hidden', // Ensure children do not overflow the container
   },
   leftContainer: {
     flex: 1,
@@ -87,11 +137,19 @@ const styles = StyleSheet.create({
     width: '70%',
     paddingTop: 10,
   },
+  actionContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
   actionButton: {
     justifyContent: 'center',
     alignItems: 'center',
     width: 70,
-    height: '100%',
+    borderRadius: 10,
   },
 });
 

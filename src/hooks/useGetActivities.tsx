@@ -5,10 +5,9 @@ import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
 import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
 
-export const useGetActivities = (selectedDay: string) => {
+export const useGetActivities = (selectedDay: string, setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<null | string>(null);
-    const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
     const timeoutRef = useRef<null | NodeJS.Timeout>(null);
 
     useEffect(() => {
@@ -69,5 +68,5 @@ export const useGetActivities = (selectedDay: string) => {
         }
     };
 
-    return [activities, loading, error];
+    return [loading, error];
 };

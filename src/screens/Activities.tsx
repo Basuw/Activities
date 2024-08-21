@@ -1,4 +1,3 @@
-// Update Activities component to ensure activities is always an array
 import React, {useState, useRef} from 'react';
 import {
   SafeAreaView,
@@ -18,14 +17,13 @@ const Activities = () => {
   const [selectedDay, setSelectedDay] = useState(
     new Date().toISOString().split('T')[0],
   );
-  const [activities, loading, error]  = useGetActivities(selectedDay);
+  const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
+  const [loading, error] = useGetActivities(selectedDay, setActivities);
 
-  console.log('activities', activities);
-  console.log('loading', loading);
-    console.log('error', error);
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
   const handleDaySelect = (day: string) => {
+    setActivities([]); // Clear activities before setting the new day
     setSelectedDay(day);
 
     if (logTimeoutRef.current) {
@@ -53,8 +51,7 @@ const Activities = () => {
       <View>
         <ActivitySection
           title="Morning Activities"
-            //activities={activities.length > 0 ? new ActivityProgressModel(activities, 80, 2) : []}
-            activities={activities}
+          activities={activities}
         />
       </View>
     </SafeAreaView>

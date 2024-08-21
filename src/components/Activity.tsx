@@ -1,9 +1,9 @@
 import React from 'react';
-import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
+import {Text, View, StyleSheet, TouchableOpacity, Dimensions} from 'react-native';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useTheme} from 'styled-components';
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -25,6 +25,8 @@ const Activity: React.FC<ActivityProps> = ({
   onExtraRightButton2 = () => {},
 }) => {
   const theme = useTheme();
+  const screenWidth = Dimensions.get('window').width;
+  const swipeThreshold = screenWidth * 0.6;
 
   const handleSwipeLeft = () => {
     console.log('Swiped left');
@@ -73,12 +75,21 @@ const Activity: React.FC<ActivityProps> = ({
     </View>
   );
 
+  const handleSwipeableOpen = (direction: 'left' | 'right', dragX: number) => {
+    if (Math.abs(dragX) >= swipeThreshold) {
+      if (direction === 'left') {
+        handleSwipeLeft();
+      } else if (direction === 'right') {
+        handleSwipeRight();
+      }
+    }
+  };
+
   return (
-    <Swipeable
+    <ReanimatedSwipeable
       renderLeftActions={renderLeftActions}
       renderRightActions={renderRightActions}
-      onSwipeableWillOpen={handleSwipeLeft}
-      onSwipeableWillClose={handleSwipeRight}
+      onSwipeableOpen={(direction: 'left' | 'right', dragX: number) => handleSwipeableOpen(direction, dragX)}
     >
       <View style={[styles.container, {backgroundColor: theme.subViewColor}]}>
         <View style={styles.leftContainer}>
@@ -95,7 +106,7 @@ const Activity: React.FC<ActivityProps> = ({
           <MaterialCommunityIcons name={activity.activityDone.activitySave.activity.icon} size={24} color={theme.foreground} />
         </View>
       </View>
-    </Swipeable>
+    </ReanimatedSwipeable>
   );
 };
 

@@ -12,11 +12,11 @@ class StubService {
     activitiesDone:ActivityDoneModel[];
     activitiesProgress:ActivityProgressModel[];
     constructor() {
-        this.user = new UserModel(1,
-            'John Doe',
-            'thisIsMyPassword',
+        this.user = new UserModel(4,
+            'Bastien',
+            '1234',
             'jonh.doe@gmail.com',
-            'user',
+            'admin',
             new Date('2021-09-01T00:00:00.000Z'),
             new Date('2021-09-01T00:00:00.000Z'),
             73.4,

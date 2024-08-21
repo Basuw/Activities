@@ -2,19 +2,26 @@ import React, {useState, useRef} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
-  Text,
+  Text, View,
 } from 'react-native';
 import ActivitySection from '../components/ActivitySection';
 import DayMenu from '../components/DaysMenu';
 import StubService from '../services/stub.ts';
 import {useTheme} from 'styled-components';
+import {useGetActivities} from "../hooks/useGetActivities.tsx";
 
 const Activities = () => {
+  const [activities, loading, error] = useGetActivities();
+  console.log(activities);
+  console.log(loading);
+    console.log(error);
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState(
     new Date().toISOString().split('T')[0],
   );
-  const logTimeoutRef = useRef(null);
+
+
+  const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
   const handleDaySelect = (day: string) => {
     setSelectedDay(day);
@@ -30,7 +37,7 @@ const Activities = () => {
 
   const getCurrentMonth = () => {
     const selectedDate = new Date(selectedDay);
-    const options = {month: 'long'};
+    const options: Intl.DateTimeFormatOptions = {month: 'long'};
     return selectedDate.toLocaleDateString('en-US', options);
   };
 
@@ -41,10 +48,12 @@ const Activities = () => {
     <SafeAreaView style={[styles.wrapper, {backgroundColor: theme.background}]}>
       <Text style={[styles.monthText, {color: theme.foreground}]}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
-      <ActivitySection
-        title="Morning Activities"
-        activities={sampleActivities}
-      />
+      <View>
+        <ActivitySection
+          title="Morning Activities"
+          activities={sampleActivities}
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -58,6 +67,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
+  },
+  container: {
+    justifyContent: 'center',
+    flex: 1,
   },
 });
 

@@ -1,11 +1,14 @@
 import {useEffect, useState, useRef} from 'react';
 import {DEV_API_URL} from '@env';
-import ActivityDoneDTO from "../dto/activities/ActivityDoneDTO.tsx";
+import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
+import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
+import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
+import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
 
 export const useGetActivities = (selectedDay: string) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<null | string>(null);
-    const [activities, setActivities] = useState<ActivityDoneDTO[]>([]);
+    const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
     const timeoutRef = useRef<null | NodeJS.Timeout>(null);
 
     useEffect(() => {
@@ -31,18 +34,34 @@ export const useGetActivities = (selectedDay: string) => {
             const response = await fetch(url);
             const data = await response.json();
             console.log('data', data);
-            console.log('data[0].achievement', data[0].achievement);
-            const dataActivities: ActivityDoneDTO[] = data.map((item: any) => new ActivityDoneDTO(
-                item.id,
-                item.achievement,
-                item.doneOn,
-                item.activitySaveId,
-                item.mark,
-                item.notes,
-                item.status,
-                item.duration,
+            const dataActivitiesProgress: ActivityProgressModel[] = data.map((item: any) => new ActivityProgressModel(
+                new ActivityDoneDTO(
+                    item.activityDone.id,
+                    item.activityDone.achievement,
+                    item.activityDone.doneOn,
+                    new ActivitySaveDTO(
+                        item.activityDone.activitySave.id,
+                        item.activityDone.activitySave.frequency,
+                        item.activityDone.activitySave.objective,
+                        new ActivityDTO(
+                            item.activityDone.activitySave.activity.id,
+                            item.activityDone.activitySave.activity.name,
+                            item.activityDone.activitySave.activity.description,
+                            item.activityDone.activitySave.activity.unity,
+                            item.activityDone.activitySave.activity.icon,
+                            item.activityDone.activitySave.activity.category,
+                        ),
+                        item.activityDone.activitySave.userId),
+                    item.activityDone.mark,
+                    item.activityDone.notes,
+                    item.activityDone.status,
+                    item.activityDone.duration,
+                ),
+                item.weekProgress,
+                item.weekObjective,
             ));
-            setActivities(dataActivities);
+
+            setActivities(dataActivitiesProgress);
         } catch (e) {
             setError('An error occurred while fetching data');
         } finally {

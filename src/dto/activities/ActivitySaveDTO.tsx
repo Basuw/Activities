@@ -1,15 +1,18 @@
+import ActivityModel from "../../models/Activities/ActivityModel.ts";
+import ActivityDTO from "./ActivityDTO.tsx";
+
 class ActivitySaveDTO {
     id: number;
     frequency: number;
     objective: number;
-    activityId: number;
+    activity: ActivityDTO;
     userId: number;
 
-  constructor(id: number, frequency: number, objective: number, activityId: number, userId: number) {
+  constructor(id: number, frequency: number, objective: number, activity: ActivityDTO, userId: number) {
     this.id = id;
     this.frequency = frequency;
     this.objective = objective;
-    this.activityId = activityId;
+    this.activity = activity;
     this.userId = userId;
   }
 }

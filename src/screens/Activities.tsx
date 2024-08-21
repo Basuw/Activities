@@ -54,7 +54,7 @@ const Activities = () => {
         <ActivitySection
           title="Morning Activities"
             //activities={activities.length > 0 ? new ActivityProgressModel(activities, 80, 2) : []}
-            activities={sampleActivities}
+            activities={activities}
         />
       </View>
     </SafeAreaView>

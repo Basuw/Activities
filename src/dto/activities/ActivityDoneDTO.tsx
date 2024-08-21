@@ -1,8 +1,10 @@
+import ActivitySaveDTO from "./ActivitySaveDTO.tsx";
+
 class ActivityDoneDTO {
     id: number;
     achievement: number;
     doneOn: Date;
-    activitySaveId: number;
+    activitySave: ActivitySaveDTO;
     mark: number;
     notes: string;
     status: string;
@@ -12,7 +14,7 @@ class ActivityDoneDTO {
         id: number,
         achievement: number,
         doneOn: Date,
-        activitySaveId: number,
+        activitySave: ActivitySaveDTO,
         mark: number,
         notes: string,
         status: string,
@@ -21,7 +23,7 @@ class ActivityDoneDTO {
         this.id = id;
         this.achievement = achievement;
         this.doneOn = doneOn;
-        this.activitySaveId = activitySaveId;
+        this.activitySave = activitySave;
         this.mark = mark;
         this.notes = notes;
         this.status = status;

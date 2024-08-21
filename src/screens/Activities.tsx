@@ -1,3 +1,4 @@
+// Update Activities component to ensure activities is always an array
 import React, {useState, useRef} from 'react';
 import {
   SafeAreaView,
@@ -9,17 +10,15 @@ import DayMenu from '../components/DaysMenu';
 import StubService from '../services/stub.ts';
 import {useTheme} from 'styled-components';
 import {useGetActivities} from "../hooks/useGetActivities.tsx";
+import ActivitySaveDTO from "../dto/activities/ActivitySaveDTO.tsx";
+import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
 
 const Activities = () => {
-  const [activities, loading, error] = useGetActivities();
-  console.log(activities);
-  console.log(loading);
-    console.log(error);
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState(
     new Date().toISOString().split('T')[0],
   );
-
+  const [activities, loading, error]: [ActivitySaveDTO[], boolean, string | null] = useGetActivities(selectedDay);
 
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
@@ -51,7 +50,8 @@ const Activities = () => {
       <View>
         <ActivitySection
           title="Morning Activities"
-          activities={sampleActivities}
+            //activities={activities.length > 0 ? new ActivityProgressModel(activities, 80, 2) : []}
+            activities={sampleActivities}
         />
       </View>
     </SafeAreaView>

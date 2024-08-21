@@ -1,11 +1,11 @@
 import {useEffect, useState, useRef} from 'react';
 import {DEV_API_URL} from '@env';
-import ActivitySaveDTO from "../dto/activities/ActivitySaveDTO.tsx";
+import ActivityDoneDTO from "../dto/activities/ActivityDoneDTO.tsx";
 
 export const useGetActivities = (selectedDay: string) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<null | string>(null);
-    const [activities, setActivities] = useState<ActivitySaveDTO[]>([]);
+    const [activities, setActivities] = useState<ActivityDoneDTO[]>([]);
     const timeoutRef = useRef<null | NodeJS.Timeout>(null);
 
     useEffect(() => {
@@ -31,12 +31,16 @@ export const useGetActivities = (selectedDay: string) => {
             const response = await fetch(url);
             const data = await response.json();
             console.log('data', data);
-            const dataActivities: ActivitySaveDTO[] = data.map((item: any) => new ActivitySaveDTO(
+            console.log('data[0].achievement', data[0].achievement);
+            const dataActivities: ActivityDoneDTO[] = data.map((item: any) => new ActivityDoneDTO(
                 item.id,
-                item.frequency,
-                item.objective,
-                item.activityId,
-                item.userId
+                item.achievement,
+                item.doneOn,
+                item.activitySaveId,
+                item.mark,
+                item.notes,
+                item.status,
+                item.duration,
             ));
             setActivities(dataActivities);
         } catch (e) {

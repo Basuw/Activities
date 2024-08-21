@@ -18,8 +18,11 @@ const Activities = () => {
   const [selectedDay, setSelectedDay] = useState(
     new Date().toISOString().split('T')[0],
   );
-  const [activities, loading, error]: [ActivitySaveDTO[], boolean, string | null] = useGetActivities(selectedDay);
+  const [activities, loading, error]  = useGetActivities(selectedDay);
 
+  console.log('activities', activities);
+  console.log('loading', loading);
+    console.log('error', error);
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
   const handleDaySelect = (day: string) => {

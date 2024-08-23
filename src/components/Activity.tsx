@@ -38,7 +38,7 @@ const Activity: React.FC<ActivityProps> = ({
     activity.activityDone.status,
     activity.activityDone.duration,
   ));
-  const [] = useSetProgress(activityDoneObject);
+  const [] = useSetProgress(activityDoneObject,setGetActivities);
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
   const swipeThreshold = screenWidth * 0.6;
@@ -60,7 +60,6 @@ const Activity: React.FC<ActivityProps> = ({
   const setDone = () => {
     activity.activityDone.achievement = activity.activityDone.activitySave.objective;
     setActivityDoneObject(activity.activityDone);
-    setGetActivities(new Date().toISOString().split('T')[1].split('.')[0]);
   };
 
   const renderLeftActions = () => (

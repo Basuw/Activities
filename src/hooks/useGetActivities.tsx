@@ -4,8 +4,9 @@ import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
 import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
+import UserModel from "../models/UserModel.ts";
 
-export const useGetActivities = (selectedDay: string, getActivities:string,setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>) => {
+export const useGetActivities = (selectedDay: string, getActivities:string,setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>,user:UserModel) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<null | string>(null);
     const timeoutRef = useRef<null | NodeJS.Timeout>(null);
@@ -29,7 +30,7 @@ export const useGetActivities = (selectedDay: string, getActivities:string,setAc
     const fetchActivitiesDone = async () => {
         setLoading(true);
         try {
-            const url = `${DEV_API_URL}/day_activities/user_id/4?date=${selectedDay}`;
+            const url = `${DEV_API_URL}/day_activities/user_id/${user.id}?date=${selectedDay}`;
             const response = await fetch(url);
             const data = await response.json();
             console.log('data', data);

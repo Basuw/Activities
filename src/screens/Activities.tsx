@@ -16,9 +16,10 @@ const Activities = () => {
   const [selectedDay, setSelectedDay] = useState(
     new Date().toISOString().split('T')[0],
   );
+  const stubService = new StubService();
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
   const [getActivities, setGetActivities] = useState(new Date().toISOString().split('T')[1].split('.')[0]);
-  const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities);
+  const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities,stubService.user);
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
   const handleDaySelect = (day: string) => {
@@ -39,9 +40,6 @@ const Activities = () => {
     const options: Intl.DateTimeFormatOptions = {month: 'long'};
     return selectedDate.toLocaleDateString('en-US', options);
   };
-
-  const stubService = new StubService();
-  const sampleActivities = stubService.activitiesProgress;
 
   return (
     <SafeAreaView style={[styles.wrapper, {backgroundColor: theme.background}]}>

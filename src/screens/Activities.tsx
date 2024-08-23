@@ -9,7 +9,6 @@ import DayMenu from '../components/DaysMenu';
 import StubService from '../services/stub.ts';
 import {useTheme} from 'styled-components';
 import {useGetActivities} from "../hooks/useGetActivities.tsx";
-import ActivitySaveDTO from "../dto/activities/ActivitySaveDTO.tsx";
 import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
 
 const Activities = () => {
@@ -32,7 +31,7 @@ const Activities = () => {
 
     logTimeoutRef.current = setTimeout(() => {
       console.log(`Selected Day: ${day}`);
-    }, 200); // Adjust the delay as needed
+    }, 50); // Adjust the delay as needed
   };
 
   const getCurrentMonth = () => {
@@ -52,6 +51,7 @@ const Activities = () => {
         <ActivitySection
           title="Morning Activities"
           activities={activities}
+          setActivities={setActivities}
         />
       </View>
     </SafeAreaView>

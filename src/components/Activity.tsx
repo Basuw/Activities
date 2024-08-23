@@ -1,12 +1,14 @@
 import React from 'react';
-import {Text, View, StyleSheet, TouchableOpacity, Dimensions} from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useTheme} from 'styled-components';
+import { useTheme } from 'styled-components';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { useSetProgress } from "../hooks/useSetProgress.tsx";
 
 interface ActivityProps {
   activity: ActivityProgressModel;
+  setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onExtraLeftButton1?: () => void;
@@ -17,6 +19,7 @@ interface ActivityProps {
 
 const Activity: React.FC<ActivityProps> = ({
   activity,
+  setActivities,
   onSwipeLeft = () => {},
   onSwipeRight = () => {},
   onExtraLeftButton1 = () => {},
@@ -43,16 +46,22 @@ const Activity: React.FC<ActivityProps> = ({
     callback();
   };
 
+  const setDone = () => {
+    console.log('Activity Done');
+    activity.activityDone.achievement = activity.activityDone.activitySave.objective;
+    useSetProgress(activity, setActivities);
+  };
+
   const renderLeftActions = () => (
     <View style={styles.actionContainer}>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'blue'}]} onPress={() => logButtonPress('Extra Left Button 1 Pressed', onExtraLeftButton1)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'blue' }]} onPress={() => logButtonPress('Extra Left Button 1 Pressed', () => { onExtraLeftButton1(); setDone(); })}>
           <MaterialCommunityIcons name="star" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'purple'}]} onPress={() => logButtonPress('Extra Left Button 2 Pressed', onExtraLeftButton2)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'purple' }]} onPress={() => logButtonPress('Extra Left Button 2 Pressed', () => { onExtraLeftButton2(); setDone(); })}>
           <MaterialCommunityIcons name="heart" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'green'}]} onPress={() => logButtonPress('Left Button Pressed', onSwipeLeft)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => setDone()}>
           <MaterialCommunityIcons name="check" size={24} color="white" />
         </TouchableOpacity>
       </View>
@@ -62,13 +71,13 @@ const Activity: React.FC<ActivityProps> = ({
   const renderRightActions = () => (
     <View style={styles.actionContainer}>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'orange'}]} onPress={() => logButtonPress('Extra Right Button 1 Pressed', onExtraRightButton1)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'orange' }]} onPress={() => logButtonPress('Extra Right Button 1 Pressed', onExtraRightButton1)}>
           <MaterialCommunityIcons name="alert" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'yellow'}]} onPress={() => logButtonPress('Extra Right Button 2 Pressed', onExtraRightButton2)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'yellow' }]} onPress={() => logButtonPress('Extra Right Button 2 Pressed', onExtraRightButton2)}>
           <MaterialCommunityIcons name="bell" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, {backgroundColor: 'red'}]} onPress={() => logButtonPress('Right Button Pressed', onSwipeRight)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'red' }]} onPress={() => logButtonPress('Right Button Pressed', onSwipeRight)}>
           <MaterialCommunityIcons name="close" size={24} color="white" />
         </TouchableOpacity>
       </View>
@@ -91,15 +100,15 @@ const Activity: React.FC<ActivityProps> = ({
       renderRightActions={renderRightActions}
       onSwipeableOpen={(direction: 'left' | 'right', dragX: number) => handleSwipeableOpen(direction, dragX)}
     >
-      <View style={[styles.container, {backgroundColor: theme.subViewColor}]}>
+      <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
         <View style={styles.leftContainer}>
-          <Text style={[styles.largeText, {color: theme.foreground}]}>{activity.activityDone.achievement}/{activity.activityDone.activitySave.objective}</Text>
+          <Text style={[styles.largeText, { color: theme.foreground }]}>{activity.activityDone.achievement}/{activity.activityDone.activitySave.objective}</Text>
         </View>
         <View style={styles.centerContainer}>
-          <Text style={[styles.activityName, {color: theme.foreground}]}>{activity.activityDone.activitySave.activity.name}</Text>
+          <Text style={[styles.activityName, { color: theme.foreground }]}>{activity.activityDone.activitySave.activity.name}</Text>
           <View style={styles.weekView}>
-            <Text style={[styles.weekInfo, {color: theme.foreground}]}>{activity.weekProgress}%</Text>
-            <Text style={[styles.weekInfo, {color: theme.foreground}]}>{activity.weekObjective}/{activity.activityDone.activitySave.frequency}</Text>
+            <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekProgress}%</Text>
+            <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekObjective}/{activity.activityDone.activitySave.frequency}</Text>
           </View>
         </View>
         <View style={styles.rightContainer}>

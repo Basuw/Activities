@@ -17,7 +17,7 @@ export const useGetActivities = (selectedDay: string, setActivities: React.Dispa
 
         timeoutRef.current = setTimeout(() => {
             fetchActivitiesDone();
-        }, 300); // Adjust the delay as needed
+        }, 100); // Adjust the delay as needed
 
         return () => {
             if (timeoutRef.current) {

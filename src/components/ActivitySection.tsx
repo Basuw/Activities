@@ -7,16 +7,17 @@ import {useTheme} from 'styled-components';
 interface ActivitySectionProps {
   title: string;
   activities: ActivityProgressModel[];
+  setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>;
 }
 
-const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities}) => {
+const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities, setActivities}) => {
   const theme = useTheme();
 
   return (
     <View style={[styles.container, {backgroundColor: theme.viewColor}]}>
       <Text style={[styles.title, {color: theme.foreground}]}>{title}</Text>
       {activities.length > 0 && activities.map((activity) => (
-        <Activity key={activity.activityDone.id} activity={activity} />
+        <Activity key={activity.activityDone.id} activity={activity} setActivities={setActivities}/>
       ))}
     </View>
   );

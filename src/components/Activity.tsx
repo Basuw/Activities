@@ -6,6 +6,8 @@ import { useTheme } from 'styled-components';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSetProgress } from '../hooks/useSetProgress.tsx';
 import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
+import ActivitySaveDTO from "../dto/activities/ActivitySaveDTO.tsx";
+import ActivityDTO from "../dto/activities/ActivityDTO.tsx";
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -28,7 +30,30 @@ const Activity: React.FC<ActivityProps> = ({
   onExtraRightButton1 = () => {},
   onExtraRightButton2 = () => {},
 }) => {
-  const [activityDoneObject, setActivityDoneObject] = useState(new ActivityDoneDTO(
+  const [newActivityDoneObject, setNewActivityDoneObject] = useState( new ActivityDoneDTO(
+          1,
+          1,
+          new Date(),
+          new ActivitySaveDTO(
+              0,
+              0,
+              0,
+              new ActivityDTO(
+                  0,
+                  '',
+                  '',
+                  '',
+                  '',
+                  '',
+                  0,
+              ),
+              0),
+          0,
+          '',
+         '',
+         new Date(),
+      ));
+  const activityDoneObject = new ActivityDoneDTO(
     activity.activityDone.id,
     activity.activityDone.achievement,
     activity.activityDone.doneOn,
@@ -37,8 +62,8 @@ const Activity: React.FC<ActivityProps> = ({
     activity.activityDone.notes,
     activity.activityDone.status,
     activity.activityDone.duration,
-  ));
-  const [] = useSetProgress(activityDoneObject,setGetActivities);
+  );
+  const [] = useSetProgress(newActivityDoneObject, setGetActivities);
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
   const swipeThreshold = screenWidth * 0.6;
@@ -59,7 +84,7 @@ const Activity: React.FC<ActivityProps> = ({
 
   const setDone = () => {
     activity.activityDone.achievement = activity.activityDone.activitySave.objective;
-    setActivityDoneObject(activity.activityDone);
+    setNewActivityDoneObject(activity.activityDone);
   };
 
   const renderLeftActions = () => (

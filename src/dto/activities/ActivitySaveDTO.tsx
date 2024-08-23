@@ -1,5 +1,4 @@
-import ActivityModel from "../../models/Activities/ActivityModel.ts";
-import ActivityDTO from "./ActivityDTO.tsx";
+import ActivityDTO from './ActivityDTO.tsx';
 
 class ActivitySaveDTO {
     id: number;

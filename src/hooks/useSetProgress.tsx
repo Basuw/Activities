@@ -1,25 +1,20 @@
-import { useEffect } from "react";
-import ActivityModel from "../models/Activities/ActivityModel.ts";
-import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
+import { useEffect } from 'react';
+import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
 
-export const useSetProgress = (activity: ActivityModel, setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>) => {
+export const useSetProgress = (activity: ActivityDoneDTO) => {
     useEffect(() => {
-        if (activity.id <= 0) {
+        if (activity.activitySave.activity.id <= 0) {
             createActivity();
         } else {
             updateActivity();
         }
-        setActivities((prevActivities) =>
-            prevActivities.map((act) =>
-                act === activity ? { ...act, activityDone: { ...act.activityDone, achievement: act.activityDone.activitySave.objective } } : act
-            )
-        );
-    }, [activity]);
+    }, );
 
     const updateActivity = () => {
-        console.log('Update activity');
+        console.log('Update activity:',activity);
     };
     const createActivity = () => {
         console.log('Add activity');
     };
+    return [activity];
 };

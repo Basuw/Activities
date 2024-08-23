@@ -1,14 +1,15 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { useSetProgress } from "../hooks/useSetProgress.tsx";
+import { useSetProgress } from '../hooks/useSetProgress.tsx';
+import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
-  setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>;
+  setGetActivities: React.Dispatch<React.SetStateAction<string>>;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onExtraLeftButton1?: () => void;
@@ -19,7 +20,7 @@ interface ActivityProps {
 
 const Activity: React.FC<ActivityProps> = ({
   activity,
-  setActivities,
+  setGetActivities,
   onSwipeLeft = () => {},
   onSwipeRight = () => {},
   onExtraLeftButton1 = () => {},
@@ -27,10 +28,20 @@ const Activity: React.FC<ActivityProps> = ({
   onExtraRightButton1 = () => {},
   onExtraRightButton2 = () => {},
 }) => {
+  const [activityDoneObject, setActivityDoneObject] = useState(new ActivityDoneDTO(
+    activity.activityDone.id,
+    activity.activityDone.achievement,
+    activity.activityDone.doneOn,
+    activity.activityDone.activitySave,
+    activity.activityDone.mark,
+    activity.activityDone.notes,
+    activity.activityDone.status,
+    activity.activityDone.duration,
+  ));
+  const [] = useSetProgress(activityDoneObject);
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
   const swipeThreshold = screenWidth * 0.6;
-
   const handleSwipeLeft = () => {
     console.log('Swiped left');
     onSwipeLeft();
@@ -47,18 +58,18 @@ const Activity: React.FC<ActivityProps> = ({
   };
 
   const setDone = () => {
-    console.log('Activity Done');
     activity.activityDone.achievement = activity.activityDone.activitySave.objective;
-    useSetProgress(activity, setActivities);
+    setActivityDoneObject(activity.activityDone);
+    setGetActivities(new Date().toISOString().split('T')[1].split('.')[0]);
   };
 
   const renderLeftActions = () => (
     <View style={styles.actionContainer}>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'blue' }]} onPress={() => logButtonPress('Extra Left Button 1 Pressed', () => { onExtraLeftButton1(); setDone(); })}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'blue' }]} onPress={() => logButtonPress('Extra Left Button 1 Pressed', () => { onExtraLeftButton1();})}>
           <MaterialCommunityIcons name="star" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'purple' }]} onPress={() => logButtonPress('Extra Left Button 2 Pressed', () => { onExtraLeftButton2(); setDone(); })}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'purple' }]} onPress={() => logButtonPress('Extra Left Button 2 Pressed', () => { onExtraLeftButton2(); })}>
           <MaterialCommunityIcons name="heart" size={24} color="white" />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => setDone()}>
@@ -102,17 +113,17 @@ const Activity: React.FC<ActivityProps> = ({
     >
       <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
         <View style={styles.leftContainer}>
-          <Text style={[styles.largeText, { color: theme.foreground }]}>{activity.activityDone.achievement}/{activity.activityDone.activitySave.objective}</Text>
+          <Text style={[styles.largeText, { color: theme.foreground }]}>{activityDoneObject.achievement}/{activityDoneObject.activitySave.objective}</Text>
         </View>
         <View style={styles.centerContainer}>
-          <Text style={[styles.activityName, { color: theme.foreground }]}>{activity.activityDone.activitySave.activity.name}</Text>
+          <Text style={[styles.activityName, { color: theme.foreground }]}>{activityDoneObject.activitySave.activity.name}</Text>
           <View style={styles.weekView}>
             <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekProgress}%</Text>
-            <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekObjective}/{activity.activityDone.activitySave.frequency}</Text>
+            <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekObjective}/{activityDoneObject.activitySave.frequency}</Text>
           </View>
         </View>
         <View style={styles.rightContainer}>
-          <MaterialCommunityIcons name={activity.activityDone.activitySave.activity.icon} size={24} color={theme.foreground} />
+          <MaterialCommunityIcons name={activityDoneObject.activitySave.activity.icon} size={24} color={theme.foreground} />
         </View>
       </View>
     </ReanimatedSwipeable>

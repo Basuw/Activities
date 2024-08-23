@@ -8,8 +8,8 @@ import ActivitySection from '../components/ActivitySection';
 import DayMenu from '../components/DaysMenu';
 import StubService from '../services/stub.ts';
 import {useTheme} from 'styled-components';
-import {useGetActivities} from "../hooks/useGetActivities.tsx";
-import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
+import {useGetActivities} from '../hooks/useGetActivities.tsx';
+import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 
 const Activities = () => {
   const theme = useTheme();
@@ -17,8 +17,8 @@ const Activities = () => {
     new Date().toISOString().split('T')[0],
   );
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
-  const [loading, error] = useGetActivities(selectedDay, setActivities);
-
+  const [getActivities, setGetActivities] = useState(new Date().toISOString().split('T')[1].split('.')[0]);
+  const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities);
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
   const handleDaySelect = (day: string) => {
@@ -51,7 +51,7 @@ const Activities = () => {
         <ActivitySection
           title="Morning Activities"
           activities={activities}
-          setActivities={setActivities}
+          setGetActivities={setGetActivities}
         />
       </View>
     </SafeAreaView>

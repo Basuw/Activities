@@ -1,23 +1,23 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Activity from './Activity';
-import ActivityProgressModel from "../models/Activities/ActivityProgressModel.ts";
+import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import {useTheme} from 'styled-components';
 
 interface ActivitySectionProps {
   title: string;
   activities: ActivityProgressModel[];
-  setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>;
+  setGetActivities: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities, setActivities}) => {
+const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities, setGetActivities}) => {
   const theme = useTheme();
 
   return (
     <View style={[styles.container, {backgroundColor: theme.viewColor}]}>
       <Text style={[styles.title, {color: theme.foreground}]}>{title}</Text>
       {activities.length > 0 && activities.map((activity) => (
-        <Activity key={activity.activityDone.id} activity={activity} setActivities={setActivities}/>
+        <Activity key={activity.activityDone.id} activity={activity} setGetActivities={setGetActivities} />
       ))}
     </View>
   );

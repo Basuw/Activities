@@ -4,6 +4,7 @@ class ActivityDTO {
     description: string;
     unity: string;
     icon: string;
+    category: string;
     userId: number;
 
     constructor(
@@ -12,6 +13,7 @@ class ActivityDTO {
         description: string,
         unity: string,
         icon: string,
+        category: string,
         userId: number
     ) {
         this.id = id;
@@ -19,6 +21,7 @@ class ActivityDTO {
         this.description = description;
         this.unity = unity;
         this.icon = icon;
+        this.category = category;
         this.userId = userId;
     }
 }

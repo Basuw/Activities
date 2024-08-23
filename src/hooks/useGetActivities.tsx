@@ -5,7 +5,7 @@ import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
 import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
 
-export const useGetActivities = (selectedDay: string, setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>) => {
+export const useGetActivities = (selectedDay: string, getActivities:string,setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<null | string>(null);
     const timeoutRef = useRef<null | NodeJS.Timeout>(null);
@@ -24,7 +24,7 @@ export const useGetActivities = (selectedDay: string, setActivities: React.Dispa
                 clearTimeout(timeoutRef.current);
             }
         };
-    }, [selectedDay]);
+    }, [selectedDay, getActivities]);
 
     const fetchActivitiesDone = async () => {
         setLoading(true);
@@ -49,6 +49,7 @@ export const useGetActivities = (selectedDay: string, setActivities: React.Dispa
                             item.activityDone.activitySave.activity.unity,
                             item.activityDone.activitySave.activity.icon,
                             item.activityDone.activitySave.activity.category,
+                            item.activityDone.activitySave.activity.userId,
                         ),
                         item.activityDone.activitySave.userId),
                     item.activityDone.mark,

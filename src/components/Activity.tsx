@@ -54,8 +54,9 @@ const Activity: React.FC<ActivityProps> = ({
     notes?: string,
     duration?: Date
   ) => {
+    const url = duration == null ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}` : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&duration=${duration}`;
     fetch(
-      `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}` + duration != null ? ` &duration=${duration}` : '',
+        url,
       {
         method: 'PATCH',
         headers: {

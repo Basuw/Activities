@@ -1,19 +1,18 @@
-import React, {useState} from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Animated, PanResponder } from 'react-native';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
-import {DEV_API_URL} from '@env';
-
+import { DEV_API_URL } from '@env';
+import Slider from '@react-native-community/slider';
+import StatusEnum from '../models/Activities/StatusEnum.ts';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
-  onExtraLeftButton1?: () => void;
-  onExtraLeftButton2?: () => void;
   onExtraRightButton1?: () => void;
   onExtraRightButton2?: () => void;
 }
@@ -22,13 +21,11 @@ const Activity: React.FC<ActivityProps> = ({
   activity,
   onSwipeLeft = () => {},
   onSwipeRight = () => {},
-  onExtraLeftButton1 = () => {},
-  onExtraLeftButton2 = () => {},
   onExtraRightButton1 = () => {},
   onExtraRightButton2 = () => {},
 }) => {
-
-  const [activityDoneObject, setActivityDoneObject] = useState( new ActivityDoneDTO(
+  const [activityDoneObject, setActivityDoneObject] = useState(
+    new ActivityDoneDTO(
       activity.activityDone.id,
       activity.activityDone.achievement,
       activity.activityDone.doneOn,
@@ -36,33 +33,42 @@ const Activity: React.FC<ActivityProps> = ({
       activity.activityDone.mark,
       activity.activityDone.notes,
       activity.activityDone.status,
-      activity.activityDone.duration,
-  ));
+      activity.activityDone.duration
+    )
+  );
+
+  const [slider, setSlider] = useState(activityDoneObject.achievement);
+  const animatedValue = useRef(new Animated.Value(slider)).current;
+  const sliderWidth = 140;
+  const sliderHeight = 40;
 
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
   const swipeThreshold = screenWidth * 0.6;
 
-
   const patchActivity = (
-      id: number,
-      achievement?: number,
-      status?: string,
-      mark?: number,
-      notes?: string,
-      duration?: Date
-  ) => {    fetch(`${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status},&mark=${mark}&notes=${notes}&duration=${duration}`, {
-      method: 'PATCH',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-        .then((response) => response.json())
-        .then((responseData) => {
-          console.log('GNGNGN',JSON.stringify(responseData));
-          setActivityDoneObject(responseData);
-        });
+    id: number,
+    achievement?: number,
+    status?: string,
+    mark?: number,
+    notes?: string,
+    duration?: Date
+  ) => {
+    fetch(
+      `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}` + duration != null ? ` &duration=${duration}` : '',
+      {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((responseData) => {
+        console.log('GNGNGN', JSON.stringify(responseData));
+        setActivityDoneObject(responseData);
+      });
   };
 
   const handleSwipeLeft = () => {
@@ -81,18 +87,68 @@ const Activity: React.FC<ActivityProps> = ({
   };
 
   const setDone = () => {
-    patchActivity(activity.activityDone.id, activity.activityDone.activitySave.objective, 'COMPLETED', activity.activityDone.mark, activity.activityDone.notes, activity.activityDone.duration);
+    patchActivity(
+      activity.activityDone.id,
+      slider,
+      StatusEnum.COMPLETED,
+      activity.activityDone.mark,
+      activity.activityDone.notes,
+      activity.activityDone.duration
+    );
   };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        const touchX = evt.nativeEvent.locationX;
+        const newValue = Math.round((touchX / sliderWidth) * activityDoneObject.activitySave.objective);
+        setSlider(newValue);
+        animatedValue.setValue(newValue);
+      },
+    })
+  ).current;
 
   const renderLeftActions = () => (
     <View style={styles.actionContainer}>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'blue' }]} onPress={() => logButtonPress('Extra Left Button 1 Pressed', () => { onExtraLeftButton1();})}>
-          <MaterialCommunityIcons name="star" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'purple' }]} onPress={() => logButtonPress('Extra Left Button 2 Pressed', () => { onExtraLeftButton2(); })}>
-          <MaterialCommunityIcons name="heart" size={24} color="white" />
-        </TouchableOpacity>
+        <View
+          style={{ width: sliderWidth, height: sliderHeight, justifyContent: 'center' }}
+          {...panResponder.panHandlers}
+        >
+          <Slider
+            style={{ width: sliderWidth, height: sliderHeight,paddingTop: 30 }}
+            minimumValue={0}
+            maximumValue={activityDoneObject.activitySave.objective}
+            step={1}
+            value={slider}
+            onValueChange={(value) => {
+              setSlider(value);
+              animatedValue.setValue(value);
+            }}
+            minimumTrackTintColor="#FFFFFF"
+            maximumTrackTintColor="#000000"
+          />
+          <Animated.Text
+            style={[
+              styles.sliderValue,
+              {
+                transform: [
+                  {
+                    translateX: animatedValue.interpolate({
+                      inputRange: [0, activityDoneObject.activitySave.objective],
+                      outputRange: [10, sliderWidth - 25], // Adjust based on slider width
+                      extrapolate: 'clamp',
+                    }),
+                  },
+                ],
+              },
+              { color: theme.foreground },
+            ]}
+          >
+            {slider}
+          </Animated.Text>
+        </View>
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => setDone()}>
           <MaterialCommunityIcons name="check" size={24} color="white" />
         </TouchableOpacity>
@@ -139,7 +195,8 @@ const Activity: React.FC<ActivityProps> = ({
         <View style={styles.centerContainer}>
           <Text style={[styles.activityName, { color: theme.foreground }]}>{activityDoneObject.activitySave.activity.name}</Text>
           <View style={styles.weekView}>
-            <Text style={[styles.weekInfo, { color: theme.foreground }]}>  {Math.round(activity.activityDone.achievement / activity.activityDone.activitySave.objective * 100)}%
+            <Text style={[styles.weekInfo, { color: theme.foreground }]}>
+              {Math.round(activity.activityDone.achievement / activity.activityDone.activitySave.objective * 100)}%
             </Text>
             <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekObjective}/{activityDoneObject.activitySave.frequency}</Text>
           </View>
@@ -203,6 +260,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 70,
     borderRadius: 10,
+  },
+  sliderValue: {
+    position: 'absolute',
+    top: 50, // Adjust based on slider height
   },
 });
 

@@ -18,7 +18,7 @@ const Activities = () => {
   );
   const stubService = new StubService();
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
-  const [getActivities, setGetActivities] = useState(new Date().toISOString().split('T')[1].split('.')[0]);
+  const [getActivities] = useState(new Date().toISOString().split('T')[1].split('.')[0]);
   const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities,stubService.user);
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
@@ -49,7 +49,6 @@ const Activities = () => {
         <ActivitySection
           title="Morning Activities"
           activities={activities}
-          setGetActivities={setGetActivities}
         />
       </View>
     </SafeAreaView>

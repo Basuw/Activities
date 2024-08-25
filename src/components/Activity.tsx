@@ -4,14 +4,12 @@ import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { useSetProgress } from '../hooks/useSetProgress.tsx';
 import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
-import ActivitySaveDTO from "../dto/activities/ActivitySaveDTO.tsx";
-import ActivityDTO from "../dto/activities/ActivityDTO.tsx";
+import {DEV_API_URL} from '@env';
+
 
 interface ActivityProps {
   activity: ActivityProgressModel;
-  setGetActivities: React.Dispatch<React.SetStateAction<string>>;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onExtraLeftButton1?: () => void;
@@ -22,7 +20,6 @@ interface ActivityProps {
 
 const Activity: React.FC<ActivityProps> = ({
   activity,
-  setGetActivities,
   onSwipeLeft = () => {},
   onSwipeRight = () => {},
   onExtraLeftButton1 = () => {},
@@ -30,43 +27,44 @@ const Activity: React.FC<ActivityProps> = ({
   onExtraRightButton1 = () => {},
   onExtraRightButton2 = () => {},
 }) => {
-  const [newActivityDoneObject, setNewActivityDoneObject] = useState( new ActivityDoneDTO(
-          1,
-          1,
-          new Date(),
-          new ActivitySaveDTO(
-              0,
-              0,
-              0,
-              new ActivityDTO(
-                  0,
-                  '',
-                  '',
-                  '',
-                  '',
-                  '',
-                  0,
-              ),
-              0),
-          0,
-          '',
-         '',
-         new Date(),
-      ));
-  const activityDoneObject = new ActivityDoneDTO(
-    activity.activityDone.id,
-    activity.activityDone.achievement,
-    activity.activityDone.doneOn,
-    activity.activityDone.activitySave,
-    activity.activityDone.mark,
-    activity.activityDone.notes,
-    activity.activityDone.status,
-    activity.activityDone.duration,
-  );
-  const [] = useSetProgress(newActivityDoneObject, setGetActivities);
+
+  const [activityDoneObject, setActivityDoneObject] = useState( new ActivityDoneDTO(
+      activity.activityDone.id,
+      activity.activityDone.achievement,
+      activity.activityDone.doneOn,
+      activity.activityDone.activitySave,
+      activity.activityDone.mark,
+      activity.activityDone.notes,
+      activity.activityDone.status,
+      activity.activityDone.duration,
+  ));
+
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
   const swipeThreshold = screenWidth * 0.6;
+
+
+  const patchActivity = (
+      id: number,
+      achievement?: number,
+      status?: string,
+      mark?: number,
+      notes?: string,
+      duration?: Date
+  ) => {    fetch(`${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status},&mark=${mark}&notes=${notes}&duration=${duration}`, {
+      method: 'PATCH',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+        .then((response) => response.json())
+        .then((responseData) => {
+          console.log('GNGNGN',JSON.stringify(responseData));
+          setActivityDoneObject(responseData);
+        });
+  };
+
   const handleSwipeLeft = () => {
     console.log('Swiped left');
     onSwipeLeft();
@@ -83,8 +81,7 @@ const Activity: React.FC<ActivityProps> = ({
   };
 
   const setDone = () => {
-    activity.activityDone.achievement = activity.activityDone.activitySave.objective;
-    setNewActivityDoneObject(activity.activityDone);
+    patchActivity(activity.activityDone.id, activity.activityDone.activitySave.objective, 'COMPLETED', activity.activityDone.mark, activity.activityDone.notes, activity.activityDone.duration);
   };
 
   const renderLeftActions = () => (
@@ -142,7 +139,8 @@ const Activity: React.FC<ActivityProps> = ({
         <View style={styles.centerContainer}>
           <Text style={[styles.activityName, { color: theme.foreground }]}>{activityDoneObject.activitySave.activity.name}</Text>
           <View style={styles.weekView}>
-            <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekProgress}%</Text>
+            <Text style={[styles.weekInfo, { color: theme.foreground }]}>  {Math.round(activity.activityDone.achievement / activity.activityDone.activitySave.objective * 100)}%
+            </Text>
             <Text style={[styles.weekInfo, { color: theme.foreground }]}>{activity.weekObjective}/{activityDoneObject.activitySave.frequency}</Text>
           </View>
         </View>

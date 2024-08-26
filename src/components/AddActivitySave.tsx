@@ -1,7 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, TouchableWithoutFeedback, Alert } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
+import StubService from '../services/stub.ts';
+import ActivityModel from '../models/Activities/ActivityModel.ts';
 
 interface AddActivitySaveProps {
   isVisible: boolean;
@@ -10,6 +12,15 @@ interface AddActivitySaveProps {
 
 const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose }) => {
   const theme = useTheme();
+  const [activities, setActivities] = useState<ActivityModel[]>([]);
+
+  useEffect(() => {
+    const stubService = new StubService();
+    const fetchedActivities = stubService.activities;
+    console.log('Fetched Activities:', fetchedActivities); // Debug log
+    const sortedActivities = fetchedActivities.sort((a, b) => a.category.localeCompare(b.category));
+    setActivities(sortedActivities);
+  }, []);
 
   return (
     <Modal
@@ -18,16 +29,29 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose })
       visible={isVisible}
       onRequestClose={onClose}
     >
-      <TouchableOpacity style={styles.modalOverlay} onPress={onClose}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={{ color: theme.foreground }}>This is a pop-up!</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialCommunityIcons name="close" size={24} color={theme.foreground} />
-            </TouchableOpacity>
-          </View>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback>
+            <View style={[styles.modalContainer, {backgroundColor: theme.background}]}>
+              <View style={[styles.modalContent, {backgroundColor: theme.background}]}>
+                <Text style={{ color: theme.foreground, fontSize: 18, marginBottom: 10 }}>Activities</Text>
+                {activities.length === 0 ? (
+                  <Text style={{ color: theme.foreground }}>No activities available</Text>
+                ) : (
+                  activities.map((activity, index) => (
+                    <Text key={index} style={{ color: theme.foreground }}>
+                      {activity.category}: {activity.name}
+                    </Text>
+                  ))
+                )}
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <MaterialCommunityIcons name="close" size={24} color={theme.foreground} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
@@ -48,6 +72,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     alignItems: 'center',
+    backgroundColor: 'white', // Ensure the content is visible
+    padding: 20,
+    borderRadius: 10,
   },
   closeButton: {
     position: 'absolute',

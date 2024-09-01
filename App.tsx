@@ -1,6 +1,6 @@
 import {StyleSheet, useColorScheme} from 'react-native';
 import React from 'react';
-import Activities from './src/screens/Activities.tsx';
+import Activities from './src/screens/Activity/Activities.tsx';
 import Profil from './src/screens/Profil.tsx';
 import { NavigationContainer} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';

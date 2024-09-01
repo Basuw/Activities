@@ -4,10 +4,10 @@ import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
+import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import Slider from '@react-native-community/slider';
-import StatusEnum from '../models/Activities/StatusEnum.ts';
+import StatusEnum from '../../models/Activities/StatusEnum.ts';
 
 interface ActivityProps {
   activity: ActivityProgressModel;

@@ -2,12 +2,12 @@ import React, { useState, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from 'styled-components';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import ActivitySection from '../components/ActivitySection';
-import DayMenu from '../components/DaysMenu';
-import StubService from '../services/stub.ts';
-import { useGetActivities } from '../hooks/useGetActivities.tsx';
-import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
-import AddActivitySave from '../components/AddActivitySave.tsx';
+import ActivitySection from '../../components/Activity/ActivitySection';
+import DayMenu from '../../components/Activity/DaysMenu';
+import StubService from '../../services/stub.ts';
+import { useGetActivities } from '../../hooks/useGetActivities.tsx';
+import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
+import AddActivitySave from '../../components/Activity/AddActivitySave.tsx';
 
 const Activities = () => {
   const theme = useTheme();

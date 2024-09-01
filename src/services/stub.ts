@@ -38,6 +38,13 @@ class StubService {
                 'Evening swim',
                 'Fitness',
                 this.user),
+            new ActivityModel(3,
+                'Reading',
+                'book',
+                'page',
+                'Evening read',
+                'Leisure',
+                this.user),
             ];
         this.activitiesSaved = [
             new ActivitySaveModel(1, 3,10, new Date('2021-09-01T00:00:00.000Z'),this.activities[0], this.user),

@@ -15,6 +15,7 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose })
   const theme = useTheme();
   const [activities, setActivities] = useState<{ [key: string]: ActivityModel[] }>({});
   const [selectedActivity, setSelectedActivity] = useState<ActivityModel | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const stubService = new StubService();
@@ -37,6 +38,13 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose })
     setSelectedActivity(null);
   };
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [category]: !prev[category],
+    }));
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -51,10 +59,18 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose })
               <ScrollView contentContainerStyle={[styles.modalContent,{ backgroundColor: theme.background }] }>
                 {Object.keys(activities).map((category) => (
                   <View key={category} style={{ backgroundColor: theme.background, marginTop: 12 }}>
-                    <Text style={{ color: theme.foreground, fontSize: 18, marginBottom: 10 }}>{category}</Text>
-                    {activities[category].map((activity) => (
-                      <TouchableOpacity key={activity.name} onPress={() => handleActivityPress(activity)}>
-                        <Text style={{ color: theme.foreground }}>{activity.name}</Text>
+                    <TouchableOpacity onPress={() => toggleCategory(category)} style={styles.categoryHeader}>
+                      <MaterialCommunityIcons
+                        name={expandedCategories[category] ? 'chevron-down' : 'chevron-right'}
+                        size={24}
+                        color={theme.foreground}
+                      />
+                      <Text style={{ color: theme.foreground, fontSize: 24, marginLeft: 10 }}>{category}</Text>
+                    </TouchableOpacity>
+                    {expandedCategories[category] && activities[category].map((activity) => (
+                      <TouchableOpacity key={activity.name} onPress={() => handleActivityPress(activity)} style={styles.activityItem}>
+                        <MaterialCommunityIcons name={activity.icon} size={24} color={theme.foreground} />
+                        <Text style={{ color: theme.foreground, marginLeft: 10, fontSize: 18 }}>{activity.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -102,6 +118,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  activityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
   },
 });
 

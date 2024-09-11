@@ -46,6 +46,48 @@ const Activity: React.FC<ActivityProps> = ({
   const screenWidth = Dimensions.get('window').width;
   const swipeThreshold = screenWidth * 0.6;
 
+  function postActivityDone() {
+    const url = `${DEV_API_URL}/achieve`;
+    const activitySave = activity.activityDone.activitySave;
+    console.log("POST")
+    fetch(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+            body: JSON.stringify({
+              achievement: slider,
+              mark: activity.activityDone.mark,
+              notes: activity.activityDone.notes,
+              activitySave: {
+                  id:activity.activityDone.activitySave.id,
+              },
+              status: StatusEnum.COMPLETED,
+              duration: activity.activityDone.duration,
+            }),
+        }
+    )
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            throw new Error('Failed to fetch data');
+          }
+        })
+        .then((responseData) => {
+          console.log('DATA', JSON.stringify(responseData));
+          responseData.activitySave = activitySave;
+          setActivityDoneObject(responseData);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    console.log('activityDoneObject', activityDoneObject);
+  }
+
   const patchActivity = (
     id: number,
     achievement?: number,
@@ -55,6 +97,8 @@ const Activity: React.FC<ActivityProps> = ({
     duration?: Date
   ) => {
     const url = duration == null ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}` : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&duration=${duration}`;
+    const activitySave = activity.activityDone.activitySave;
+    console.log("PATCH")
     fetch(
         url,
       {
@@ -67,7 +111,8 @@ const Activity: React.FC<ActivityProps> = ({
     )
       .then((response) => response.json())
       .then((responseData) => {
-        console.log('GNGNGN', JSON.stringify(responseData));
+        console.log('DATA', JSON.stringify(responseData));
+        responseData.activitySave = activitySave;
         setActivityDoneObject(responseData);
       });
   };
@@ -84,18 +129,24 @@ const Activity: React.FC<ActivityProps> = ({
 
   const logButtonPress = (message: string, callback: () => void) => {
     console.log(message);
+    console.log('activityDoneObject', activityDoneObject);
     callback();
   };
 
-  const setDone = () => {
-    patchActivity(
-      activity.activityDone.id,
-      slider,
-      StatusEnum.COMPLETED,
-      activity.activityDone.mark,
-      activity.activityDone.notes,
-      activity.activityDone.duration
-    );
+  const updateActivityDone = () => {
+    console.log('activity.activityDone.id', activity.activityDone.id);
+    if (activityDoneObject.id <= 0) {
+      postActivityDone();
+    }else{
+      patchActivity(
+          activityDoneObject.id,
+          slider,
+          StatusEnum.COMPLETED,
+          activityDoneObject.mark,
+          activityDoneObject.notes,
+          activityDoneObject.duration
+      );
+    }
   };
 
   const panResponder = useRef(
@@ -150,7 +201,7 @@ const Activity: React.FC<ActivityProps> = ({
             {slider}
           </Animated.Text>
         </View>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => setDone()}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => updateActivityDone()}>
           <MaterialCommunityIcons name="check" size={24} color="white" />
         </TouchableOpacity>
       </View>

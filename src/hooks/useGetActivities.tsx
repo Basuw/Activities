@@ -33,7 +33,6 @@ export const useGetActivities = (selectedDay: string, getActivities:string,setAc
             const url = `${DEV_API_URL}/day_activities/user_id/${user.id}?date=${selectedDay}`;
             const response = await fetch(url);
             const data = await response.json();
-            console.log('data', data);
             const dataActivitiesProgress: ActivityProgressModel[] = data.map((item: any) => new ActivityProgressModel(
                 new ActivityDoneDTO(
                     item.activityDone.id,
@@ -61,7 +60,12 @@ export const useGetActivities = (selectedDay: string, getActivities:string,setAc
                 item.weekProgress,
                 item.weekObjective,
             ));
-
+            for (let i = 0; i < dataActivitiesProgress.length; i++) {
+                if (dataActivitiesProgress[i].activityDone.id === 0) {
+                    dataActivitiesProgress[i].activityDone.id = -i;
+                }
+            }
+            console.log(dataActivitiesProgress);
             setActivities(dataActivitiesProgress);
         } catch (e) {
             setError('An error occurred while fetching data');

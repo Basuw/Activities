@@ -34,7 +34,7 @@ const Activities = () => {
 
     logTimeoutRef.current = setTimeout(() => {
       console.log(`Selected Day: ${day}`);
-    }, 50); // Adjust the delay as needed
+    }, 100); // Adjust the delay as needed
   };
 
   const getCurrentMonth = () => {

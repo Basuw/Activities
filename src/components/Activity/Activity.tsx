@@ -8,6 +8,7 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import Slider from '@react-native-community/slider';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
+import {Gesture, GestureDetector} from "react-native-gesture-handler";
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -41,10 +42,13 @@ const Activity: React.FC<ActivityProps> = ({
   const animatedValue = useRef(new Animated.Value(slider)).current;
   const sliderWidth = 140;
   const sliderHeight = 40;
-
+  const pan = Gesture.Pan()
+      .onUpdate(e => {
+        console.log('e.translationX', e.translationX);
+      });
   const theme = useTheme();
   const screenWidth = Dimensions.get('window').width;
-  const swipeThreshold = screenWidth * 0.6;
+  const swipeThreshold = screenWidth * 0.3;
 
   function postActivityDone() {
     const url = `${DEV_API_URL}/achieve`;
@@ -225,6 +229,8 @@ const Activity: React.FC<ActivityProps> = ({
   );
 
   const handleSwipeableOpen = (direction: 'left' | 'right', dragX: number) => {
+    console.log('swipe');
+    console.log('Math.abs(dragX)',Math.abs(dragX));
     if (Math.abs(dragX) >= swipeThreshold) {
       if (direction === 'left') {
         handleSwipeLeft();
@@ -235,11 +241,7 @@ const Activity: React.FC<ActivityProps> = ({
   };
 
   return (
-    <ReanimatedSwipeable
-      renderLeftActions={renderLeftActions}
-      renderRightActions={renderRightActions}
-      onSwipeableOpen={(direction: 'left' | 'right', dragX: number) => handleSwipeableOpen(direction, dragX)}
-    >
+    <GestureDetector gesture={pan}>
       <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
         <View style={styles.leftContainer}>
           <Text style={[styles.largeText, { color: theme.foreground }]}>{activityDoneObject.achievement}/{activityDoneObject.activitySave.objective}</Text>
@@ -257,7 +259,7 @@ const Activity: React.FC<ActivityProps> = ({
           <MaterialCommunityIcons name={activityDoneObject.activitySave.activity.icon} size={24} color={theme.foreground} />
         </View>
       </View>
-    </ReanimatedSwipeable>
+    </GestureDetector>
   );
 };
 

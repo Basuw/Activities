@@ -7,6 +7,7 @@ import ReanimatedSwipeable  from 'react-native-gesture-handler/ReanimatedSwipeab
 import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -102,8 +103,10 @@ const Activity: React.FC<ActivityProps> = ({
 
   const handleSwipeLeft = () => {
     console.log('Swiped left');
-    activityDoneObject.achievement = activityDoneObject.activitySave.objective;
-    updateActivityDone();
+    if(activityDoneObject.achievement !== activityDoneObject.activitySave.objective){
+      activityDoneObject.achievement = activityDoneObject.activitySave.objective;
+      updateActivityDone();
+    }
   };
 
   const handleSwipeRight = () => {
@@ -131,11 +134,16 @@ const Activity: React.FC<ActivityProps> = ({
   };
 
   const renderLeftActions = () => (
-    <View style={styles.leftAction}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => updateActivityDone()}>
+      <LinearGradient
+          colors={[ '#56ab2f','#a8e063']} // Dégradé de vert clair
+          start={{ x: 0, y: 0 }} // Début du dégradé à gauche
+          end={{ x: 1, y: 0 }} // Fin du dégradé à droite
+          style={styles.leftAction}
+      >
+        <TouchableOpacity style={styles.actionButton} onPress={() => updateActivityDone()}>
           <MaterialCommunityIcons name="check" size={24} color="white" />
         </TouchableOpacity>
-    </View>
+      </LinearGradient>
   );
 
   const renderRightActions = () => (

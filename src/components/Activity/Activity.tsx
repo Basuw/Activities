@@ -1,24 +1,19 @@
-import React, { useState, useRef } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Animated, PanResponder } from 'react-native';
+import React, { useState } from 'react';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
-import ReanimatedSwipeable, {SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwipeable';
+import ReanimatedSwipeable  from 'react-native-gesture-handler/ReanimatedSwipeable';
 import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
-import Slider from '@react-native-community/slider';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
-  onExtraRightButton1?: () => void;
-  onExtraRightButton2?: () => void;
 }
 
 const Activity: React.FC<ActivityProps> = ({
   activity,
-  onExtraRightButton1 = () => {},
-  onExtraRightButton2 = () => {},
 }) => {
   const [activityDoneObject, setActivityDoneObject] = useState(
     new ActivityDoneDTO(
@@ -33,19 +28,12 @@ const Activity: React.FC<ActivityProps> = ({
     )
   );
 
-  const [slider, setSlider] = useState(activityDoneObject.achievement);
-  const animatedValue = useRef(new Animated.Value(slider)).current;
-  const sliderWidth = 140;
-  const sliderHeight = 40;
-
-  const openSwipeableRef = useRef<null | SwipeableMethods>(null);
-
   const theme = useTheme();
 
   function postActivityDone() {
     const url = `${DEV_API_URL}/achieve`;
     const activitySave = activity.activityDone.activitySave;
-    console.log("POST")
+    console.log('POST')
     fetch(
         url,
         {
@@ -55,14 +43,14 @@ const Activity: React.FC<ActivityProps> = ({
             'Content-Type': 'application/json',
           },
             body: JSON.stringify({
-              achievement: slider,
-              mark: activity.activityDone.mark,
-              notes: activity.activityDone.notes,
+              achievement: activityDoneObject.achievement,
+              mark: activityDoneObject.mark,
+              notes: activityDoneObject.notes,
               activitySave: {
-                  id:activity.activityDone.activitySave.id,
+                  id:activityDoneObject.activitySave.id,
               },
               status: StatusEnum.COMPLETED,
-              duration: activity.activityDone.duration,
+              duration: activityDoneObject.duration,
             }),
         }
     )
@@ -74,7 +62,6 @@ const Activity: React.FC<ActivityProps> = ({
           }
         })
         .then((responseData) => {
-          console.log('DATA', JSON.stringify(responseData));
           responseData.activitySave = activitySave;
           setActivityDoneObject(responseData);
         })
@@ -94,7 +81,7 @@ const Activity: React.FC<ActivityProps> = ({
   ) => {
     const url = duration == null ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}` : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&duration=${duration}`;
     const activitySave = activity.activityDone.activitySave;
-    console.log("PATCH")
+    console.log('PATCH');
     fetch(
         url,
       {
@@ -107,34 +94,34 @@ const Activity: React.FC<ActivityProps> = ({
     )
       .then((response) => response.json())
       .then((responseData) => {
-        console.log('DATA', JSON.stringify(responseData));
         responseData.activitySave = activitySave;
         setActivityDoneObject(responseData);
+        console.log('activityDoneObject', activityDoneObject);
       });
   };
 
   const handleSwipeLeft = () => {
     console.log('Swiped left');
+    activityDoneObject.achievement = activityDoneObject.activitySave.objective;
+    updateActivityDone();
   };
 
   const handleSwipeRight = () => {
     console.log('Swiped right');
   };
 
-  const logButtonPress = (message: string, callback: () => void) => {
+  const logButtonPress = (message: string) => {
     console.log(message);
     console.log('activityDoneObject', activityDoneObject);
-    callback();
   };
 
   const updateActivityDone = () => {
-    console.log('activity.activityDone.id', activity.activityDone.id);
     if (activityDoneObject.id <= 0) {
       postActivityDone();
     }else{
       patchActivity(
           activityDoneObject.id,
-          slider,
+          activityDoneObject.achievement,
           StatusEnum.COMPLETED,
           activityDoneObject.mark,
           activityDoneObject.notes,
@@ -143,75 +130,24 @@ const Activity: React.FC<ActivityProps> = ({
     }
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        const touchX = evt.nativeEvent.locationX;
-        const newValue = Math.round((touchX / sliderWidth) * activityDoneObject.activitySave.objective);
-        setSlider(newValue);
-        animatedValue.setValue(newValue);
-      },
-    })
-  ).current;
-
   const renderLeftActions = () => (
     <View style={styles.leftAction}>
-      <View style={styles.buttonGroup}>
-        <View
-          style={{ width: sliderWidth, height: sliderHeight, justifyContent: 'center' }}
-          {...panResponder.panHandlers}
-        >
-          <Slider
-            style={{ width: sliderWidth, height: sliderHeight,paddingTop: 30 }}
-            minimumValue={0}
-            maximumValue={activityDoneObject.activitySave.objective}
-            step={1}
-            value={slider}
-            onValueChange={(value) => {
-              setSlider(value);
-              animatedValue.setValue(value);
-            }}
-            minimumTrackTintColor="#FFFFFF"
-            maximumTrackTintColor="#000000"
-          />
-          <Animated.Text
-            style={[
-              styles.sliderValue,
-              {
-                transform: [
-                  {
-                    translateX: animatedValue.interpolate({
-                      inputRange: [0, activityDoneObject.activitySave.objective],
-                      outputRange: [10, sliderWidth - 25], // Adjust based on slider width
-                      extrapolate: 'clamp',
-                    }),
-                  },
-                ],
-              },
-              { color: theme.foreground },
-            ]}
-          >
-            {slider}
-          </Animated.Text>
-        </View>
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => updateActivityDone()}>
           <MaterialCommunityIcons name="check" size={24} color="white" />
         </TouchableOpacity>
-      </View>
     </View>
   );
 
   const renderRightActions = () => (
     <View style={styles.rightAction}>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'orange' }]} onPress={() => logButtonPress('Extra Right Button 1 Pressed', onExtraRightButton1)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'orange' }]} onPress={() => logButtonPress('Extra Right Button 1 Pressed')}>
           <MaterialCommunityIcons name="alert" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'yellow' }]} onPress={() => logButtonPress('Extra Right Button 2 Pressed', onExtraRightButton2)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'yellow' }]} onPress={() => logButtonPress('Extra Right Button 2 Pressed')}>
           <MaterialCommunityIcons name="bell" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'red' }]} onPress={() => logButtonPress('Right Button Pressed', onSwipeRight)}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'red' }]} onPress={() => logButtonPress('Right Button Pressed')}>
           <MaterialCommunityIcons name="close" size={24} color="white" />
         </TouchableOpacity>
       </View>
@@ -234,7 +170,7 @@ const Activity: React.FC<ActivityProps> = ({
       renderLeftActions={renderLeftActions}
       renderRightActions={renderRightActions}
       rightThreshold={50}
-      leftThreshold={50}
+      leftThreshold={100}
       onSwipeableWillOpen={(direction: 'left' | 'right') => handleSwipeableOpen(direction)}
     >
       <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
@@ -306,10 +242,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 70,
   },
-  sliderValue: {
-    position: 'absolute',
-    top: 50, // Adjust based on slider height
-  },
   leftAction: {
     backgroundColor: 'green',
     flexDirection: 'row',
@@ -318,7 +250,6 @@ const styles = StyleSheet.create({
     rightAction: {
       backgroundColor: 'red',
       flexDirection: 'row',
-        flex: 1,
     },
 });
 

@@ -3,25 +3,20 @@ import { Text, View, StyleSheet, TouchableOpacity, Dimensions, Animated, PanResp
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import ReanimatedSwipeable, {SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import Slider from '@react-native-community/slider';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
-import {Gesture, GestureDetector} from "react-native-gesture-handler";
 
 interface ActivityProps {
   activity: ActivityProgressModel;
-  onSwipeLeft?: () => void;
-  onSwipeRight?: () => void;
   onExtraRightButton1?: () => void;
   onExtraRightButton2?: () => void;
 }
 
 const Activity: React.FC<ActivityProps> = ({
   activity,
-  onSwipeLeft = () => {},
-  onSwipeRight = () => {},
   onExtraRightButton1 = () => {},
   onExtraRightButton2 = () => {},
 }) => {
@@ -42,13 +37,10 @@ const Activity: React.FC<ActivityProps> = ({
   const animatedValue = useRef(new Animated.Value(slider)).current;
   const sliderWidth = 140;
   const sliderHeight = 40;
-  const pan = Gesture.Pan()
-      .onUpdate(e => {
-        console.log('e.translationX', e.translationX);
-      });
+
+  const openSwipeableRef = useRef<null | SwipeableMethods>(null);
+
   const theme = useTheme();
-  const screenWidth = Dimensions.get('window').width;
-  const swipeThreshold = screenWidth * 0.3;
 
   function postActivityDone() {
     const url = `${DEV_API_URL}/achieve`;
@@ -123,12 +115,10 @@ const Activity: React.FC<ActivityProps> = ({
 
   const handleSwipeLeft = () => {
     console.log('Swiped left');
-    onSwipeLeft();
   };
 
   const handleSwipeRight = () => {
     console.log('Swiped right');
-    onSwipeRight();
   };
 
   const logButtonPress = (message: string, callback: () => void) => {
@@ -166,7 +156,7 @@ const Activity: React.FC<ActivityProps> = ({
   ).current;
 
   const renderLeftActions = () => (
-    <View style={styles.actionContainer}>
+    <View style={styles.leftAction}>
       <View style={styles.buttonGroup}>
         <View
           style={{ width: sliderWidth, height: sliderHeight, justifyContent: 'center' }}
@@ -213,7 +203,7 @@ const Activity: React.FC<ActivityProps> = ({
   );
 
   const renderRightActions = () => (
-    <View style={styles.actionContainer}>
+    <View style={styles.rightAction}>
       <View style={styles.buttonGroup}>
         <TouchableOpacity style={[styles.actionButton, { backgroundColor: 'orange' }]} onPress={() => logButtonPress('Extra Right Button 1 Pressed', onExtraRightButton1)}>
           <MaterialCommunityIcons name="alert" size={24} color="white" />
@@ -228,20 +218,25 @@ const Activity: React.FC<ActivityProps> = ({
     </View>
   );
 
-  const handleSwipeableOpen = (direction: 'left' | 'right', dragX: number) => {
+  const handleSwipeableOpen = (direction: 'left' | 'right') => {
     console.log('swipe');
-    console.log('Math.abs(dragX)',Math.abs(dragX));
-    if (Math.abs(dragX) >= swipeThreshold) {
-      if (direction === 'left') {
-        handleSwipeLeft();
-      } else if (direction === 'right') {
-        handleSwipeRight();
-      }
+    console.log('direction',direction);
+    if (direction === 'left') {
+      handleSwipeLeft();
+    } else if (direction === 'right') {
+      handleSwipeRight();
     }
   };
 
   return (
-    <GestureDetector gesture={pan}>
+    <ReanimatedSwipeable
+      containerStyle={styles.swipeableContainer}
+      renderLeftActions={renderLeftActions}
+      renderRightActions={renderRightActions}
+      rightThreshold={50}
+      leftThreshold={50}
+      onSwipeableWillOpen={(direction: 'left' | 'right') => handleSwipeableOpen(direction)}
+    >
       <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
         <View style={styles.leftContainer}>
           <Text style={[styles.largeText, { color: theme.foreground }]}>{activityDoneObject.achievement}/{activityDoneObject.activitySave.objective}</Text>
@@ -259,17 +254,18 @@ const Activity: React.FC<ActivityProps> = ({
           <MaterialCommunityIcons name={activityDoneObject.activitySave.activity.icon} size={24} color={theme.foreground} />
         </View>
       </View>
-    </GestureDetector>
+    </ReanimatedSwipeable>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    padding: 10,
-    marginTop: 10,
-    borderRadius: 10,
     overflow: 'hidden', // Ensure children do not overflow the container
+    padding: 10,
+  },
+  swipeableContainer:{
+    borderRadius: 10,
   },
   leftContainer: {
     flex: 1,
@@ -301,10 +297,6 @@ const styles = StyleSheet.create({
     width: '70%',
     paddingTop: 10,
   },
-  actionContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -313,12 +305,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: 70,
-    borderRadius: 10,
   },
   sliderValue: {
     position: 'absolute',
     top: 50, // Adjust based on slider height
   },
+  leftAction: {
+    backgroundColor: 'green',
+    flexDirection: 'row',
+    flex: 1,
+  },
+    rightAction: {
+      backgroundColor: 'red',
+      flexDirection: 'row',
+        flex: 1,
+    },
 });
 
 export default Activity;

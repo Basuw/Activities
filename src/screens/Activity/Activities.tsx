@@ -8,8 +8,9 @@ import StubService from '../../services/stub.ts';
 import { useGetActivities } from '../../hooks/useGetActivities.tsx';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
 import AddActivitySave from '../../components/Activity/AddActivitySave.tsx';
+import UserModel from "../../models/UserModel.ts";
 
-const Activities = () => {
+const Activities = (props: { user:UserModel }) => {
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
   const stubService = new StubService();
@@ -58,7 +59,7 @@ const Activities = () => {
       <TouchableOpacity style={[styles.addActivity,{backgroundColor: theme.purple}]} onPress={toggleModal}>
         <MaterialCommunityIcons name="plus" size={24} color='white' />
       </TouchableOpacity>
-      <AddActivitySave isVisible={isModalVisible} onClose={toggleModal} />
+      <AddActivitySave isVisible={isModalVisible} onClose={toggleModal} user={props.user}/>
     </SafeAreaView>
   );
 };

@@ -1,36 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, TouchableWithoutFeedback, ScrollView } from 'react-native';
+// src/components/Activity/AddActivitySave.tsx
+import React, {useEffect, useState} from 'react';
+import {Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import {DEV_API_URL} from '@env';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTheme } from 'styled-components';
-import StubService from '../../services/stub.ts';
-import ActivityModel from '../../models/Activities/ActivityModel.ts';
+import {useTheme} from 'styled-components';
 import ActivityDetailsModal from './ActivityDetailsModal.tsx';
+import UserModel from "../../models/UserModel.ts";
+import ActivityDTO from '../../dto/activities/ActivityDTO.tsx';
 
 interface AddActivitySaveProps {
   isVisible: boolean;
+  user: UserModel;
   onClose: () => void;
 }
 
-const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose }) => {
+const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, user }) => {
   const theme = useTheme();
-  const [activities, setActivities] = useState<{ [key: string]: ActivityModel[] }>({});
-  const [selectedActivity, setSelectedActivity] = useState<ActivityModel | null>(null);
+  const [activities, setActivities] = useState<{ [key: string]: ActivityDTO[] }>({});
+  const [selectedActivity, setSelectedActivity] = useState<ActivityDTO | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
+  let fecthedActivitiesDTO : ActivityDTO[] = [];
 
   useEffect(() => {
-    const stubService = new StubService();
-    const fetchedActivities = stubService.activities;
-    const groupedActivities = fetchedActivities.reduce((acc, activity) => {
+    //const stubService = new StubService();
+    //const fetchedActivities = stubService.activities;
+    getActivities();
+  }, []);
+
+  function activitiesToListWithCategory(list: ActivityDTO[]) {
+    console.log('list', list);
+    return list.reduce((acc, activity) => {
       if (!acc[activity.category]) {
         acc[activity.category] = [];
       }
       acc[activity.category].push(activity);
       return acc;
-    }, {} as { [key: string]: ActivityModel[] });
-    setActivities(groupedActivities);
-  }, []);
+    }, {} as { [key: string]: ActivityDTO[] });
+  }
+  function getActivities() {
+    const url = `${DEV_API_URL}/activity/all/user/${user.id}`;
+    console.log('GET');
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw new Error('Failed to fetch data');
+        }
+      })
+      .then((responseData) => {
+        if (responseData) {
+          fecthedActivitiesDTO = responseData;
+          const listCat =  activitiesToListWithCategory(fecthedActivitiesDTO);
+          setActivities(listCat);
+          console.log('fecthedActivitiesDTO', fecthedActivitiesDTO);
+          console.log('activities', activities);
+        } else {
+          console.log('Empty response');
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    console.log('activityDoneObject');
+  }
 
-  const handleActivityPress = (activity: ActivityModel) => {
+  const handleActivityPress = (activity: ActivityDTO) => {
     setSelectedActivity(activity);
   };
 
@@ -56,7 +97,7 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose })
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback>
             <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
-              <ScrollView contentContainerStyle={[styles.modalContent,{ backgroundColor: theme.background }] }>
+              <ScrollView contentContainerStyle={[styles.modalContent, { backgroundColor: theme.background }]}>
                 {Object.keys(activities).map((category) => (
                   <View key={category} style={{ backgroundColor: theme.background, marginTop: 12 }}>
                     <TouchableOpacity onPress={() => toggleCategory(category)} style={styles.categoryHeader}>

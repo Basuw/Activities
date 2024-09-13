@@ -10,6 +10,7 @@ import {ThemeProvider} from 'styled-components';
 // @ts-ignore
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import StubService from "./src/services/stub.ts";
 
 const darkTheme = {
     background: '#282828',
@@ -39,6 +40,8 @@ createNativeStackNavigator();
 const App: React.JSX.Element = () => {
   //const [theme, setTheme] = useTheme();
     const scheme = useColorScheme();
+    const stubService = new StubService();
+    const user = stubService.user;
     return (
         <GestureHandlerRootView>
             <ThemeProvider theme={scheme === 'dark' ? darkTheme : lightTheme}>
@@ -61,7 +64,10 @@ const App: React.JSX.Element = () => {
                             },
                         })}
                     >
-                        <Tab.Screen name="Activities" component={Activities} options={{ tabBarBadge:2, headerShown: false }} />
+                        <Tab.Screen
+                            name="Activities"
+                            children={() => <Activities user={user} />}
+                            options={{ tabBarBadge:2, headerShown: false }} />
                         <Tab.Screen name="Profil" component={Profil} options={{ headerShown: false }} />
                     </Tab.Navigator>
                 </NavigationContainer>

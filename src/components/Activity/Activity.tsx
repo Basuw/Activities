@@ -8,7 +8,7 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
 import LinearGradient from 'react-native-linear-gradient';
-import { format } from 'date-fns';
+import dayjs from "dayjs";
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -33,10 +33,9 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   const swipeableRef = useRef<SwipeableMethods | null>(null);
 
   function postActivityDone() {
-    const url = `${DEV_API_URL}/achieve?doneOn=${activityDoneObject.doneOn}`;
+    const url = `${DEV_API_URL}/achieve?doneOn=${ dayjs().format('YYYY-MM-DD HH:mm:ss')}`;
     const activitySave = activity.activityDone.activitySave;
     console.log('POST');
-    console.log('doneOn', activityDoneObject.doneOn);
     fetch(url, {
       method: 'POST',
       headers: {
@@ -79,10 +78,11 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
     notes?: string,
     duration?: Date
   ) => {
+    const doneOne = activityDoneObject.doneOn.toString()===dayjs().format('YYYY-MM-DD')? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
     const url =
       duration == null
-        ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}`
-        : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&duration=${duration}`;
+        ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&doneOn=${doneOne}`
+        : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&doneOn=${doneOne}duration=${duration}`;
     const activitySave = activity.activityDone.activitySave;
     console.log('PATCH');
     fetch(url, {
@@ -96,37 +96,28 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
       .then((responseData) => {
         responseData.activitySave = activitySave;
         setActivityDoneObject(responseData);
-        console.log('activityDoneObject', activityDoneObject);
       });
   };
 
   const handleSwipeLeft = () => {
-    console.log('Swiped left');
     if (activityDoneObject.achievement !== activityDoneObject.activitySave.objective) {
       activityDoneObject.achievement = activityDoneObject.activitySave.objective;
-      activityDoneObject.doneOn = selectedDay;
       updateActivityDone();
     }
   };
 
   const handleSwipeRight = () => {
-    console.log('Swiped right');
   };
 
   const logButtonPress = (message: string) => {
     console.log(message);
-    console.log('activityDoneObject', activityDoneObject);
   };
 
   const updateActivityDone = () => {
-    if (selectedDay.toDateString() === new Date().toDateString()) {
-      activityDoneObject.doneOn = new Date( format(new Date(), 'yyyy-MM-dd HH:mm:ss'));
-    } else {
-      activityDoneObject.doneOn = new Date(format(selectedDay, 'yyyy-MM-dd 00:00:00'));
-    }
+    activityDoneObject.doneOn = selectedDay;
     if (activityDoneObject.id <= 0) {
       postActivityDone();
-    }else{
+    } else {
       patchActivity(
           activityDoneObject.id,
           activityDoneObject.achievement,
@@ -177,8 +168,6 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   );
 
   const handleSwipeableOpen = (direction: 'left' | 'right') => {
-    console.log('swipe');
-    console.log('direction', direction);
     if (direction === 'left') {
       handleSwipeLeft();
     } else if (direction === 'right') {

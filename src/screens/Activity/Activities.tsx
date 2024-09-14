@@ -53,7 +53,7 @@ const Activities = (props: { user:UserModel }) => {
       <Text style={[styles.monthText, { color: theme.foreground }]}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <ActivitySection title="Morning Activities" activities={activities} />
+        <ActivitySection title="Morning Activities" activities={activities} selectedDay={selectedDay}/>
         {/* Add more ActivitySection components as needed */}
       </ScrollView>
       <TouchableOpacity style={[styles.addActivity,{backgroundColor: theme.purple}]} onPress={toggleModal}>

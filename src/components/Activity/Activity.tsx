@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
@@ -9,12 +8,14 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
 import LinearGradient from 'react-native-linear-gradient';
+import { format } from 'date-fns';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
+  selectedDay: Date
 }
 
-const Activity: React.FC<ActivityProps> = ({ activity }) => {
+const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   const [activityDoneObject, setActivityDoneObject] = useState(
     new ActivityDoneDTO(
       activity.activityDone.id,
@@ -30,12 +31,12 @@ const Activity: React.FC<ActivityProps> = ({ activity }) => {
 
   const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods | null>(null);
-  const velocity = useSharedValue(0);
 
   function postActivityDone() {
-    const url = `${DEV_API_URL}/achieve`;
+    const url = `${DEV_API_URL}/achieve?doneOn=${activityDoneObject.doneOn}`;
     const activitySave = activity.activityDone.activitySave;
     console.log('POST');
+    console.log('doneOn', activityDoneObject.doneOn);
     fetch(url, {
       method: 'POST',
       headers: {
@@ -103,6 +104,7 @@ const Activity: React.FC<ActivityProps> = ({ activity }) => {
     console.log('Swiped left');
     if (activityDoneObject.achievement !== activityDoneObject.activitySave.objective) {
       activityDoneObject.achievement = activityDoneObject.activitySave.objective;
+      activityDoneObject.doneOn = selectedDay;
       updateActivityDone();
     }
   };
@@ -117,6 +119,11 @@ const Activity: React.FC<ActivityProps> = ({ activity }) => {
   };
 
   const updateActivityDone = () => {
+    if (selectedDay.toDateString() === new Date().toDateString()) {
+      activityDoneObject.doneOn = new Date( format(new Date(), 'yyyy-MM-dd HH:mm:ss'));
+    } else {
+      activityDoneObject.doneOn = new Date(format(selectedDay, 'yyyy-MM-dd 00:00:00'));
+    }
     if (activityDoneObject.id <= 0) {
       postActivityDone();
     }else{

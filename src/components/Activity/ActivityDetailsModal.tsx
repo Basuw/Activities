@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
-import ActivityModel from '../../models/Activities/ActivityModel.ts';
+import ActivityDTO from "../../dto/activities/ActivityDTO.tsx";
 
 interface ActivityDetailsModalProps {
   isVisible: boolean;
-  activity: ActivityModel;
+  activity: ActivityDTO;
   onClose: () => void;
 }
 

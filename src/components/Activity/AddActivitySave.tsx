@@ -5,7 +5,7 @@ import {DEV_API_URL} from '@env';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useTheme} from 'styled-components';
 import ActivityDetailsModal from './ActivityDetailsModal.tsx';
-import UserModel from "../../models/UserModel.ts";
+import UserModel from '../../models/UserModel.ts';
 import ActivityDTO from '../../dto/activities/ActivityDTO.tsx';
 
 interface AddActivitySaveProps {
@@ -162,13 +162,13 @@ const styles = StyleSheet.create({
   },
   categoryHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 10,
+    paddingLeft: 20, // Adjust padding to add space from the left edge
   },
   activityItem: {
     flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 5,
+    paddingLeft: 30, // Add padding to indent the list of categories
   },
 });
 

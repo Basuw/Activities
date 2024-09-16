@@ -8,7 +8,7 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
 import LinearGradient from 'react-native-linear-gradient';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -35,7 +35,6 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   function postActivityDone() {
     const url = `${DEV_API_URL}/achieve?doneOn=${ dayjs().format('YYYY-MM-DD HH:mm:ss')}`;
     const activitySave = activity.activityDone.activitySave;
-    console.log('POST');
     fetch(url, {
       method: 'POST',
       headers: {
@@ -67,7 +66,6 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
       .catch((error) => {
         console.error(error);
       });
-    console.log('activityDoneObject', activityDoneObject);
   }
 
   const patchActivity = (
@@ -78,13 +76,12 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
     notes?: string,
     duration?: Date
   ) => {
-    const doneOne = activityDoneObject.doneOn.toString()===dayjs().format('YYYY-MM-DD')? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
+    const doneOne = activityDoneObject.doneOn.toString() === dayjs().format('YYYY-MM-DD') ? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
     const url =
       duration == null
         ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&doneOn=${doneOne}`
         : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&doneOn=${doneOne}duration=${duration}`;
     const activitySave = activity.activityDone.activitySave;
-    console.log('PATCH');
     fetch(url, {
       method: 'PATCH',
       headers: {

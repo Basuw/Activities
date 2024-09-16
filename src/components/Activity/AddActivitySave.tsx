@@ -28,7 +28,6 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, u
   }, []);
 
   function activitiesToListWithCategory(list: ActivityDTO[]) {
-    console.log('list', list);
     return list.reduce((acc, activity) => {
       if (!acc[activity.category]) {
         acc[activity.category] = [];
@@ -39,7 +38,6 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, u
   }
   function getActivities() {
     const url = `${DEV_API_URL}/activity/all/user/${user.id}`;
-    console.log('GET');
     fetch(url, {
       method: 'GET',
       headers: {
@@ -59,8 +57,6 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, u
           fecthedActivitiesDTO = responseData;
           const listCat =  activitiesToListWithCategory(fecthedActivitiesDTO);
           setActivities(listCat);
-          console.log('fecthedActivitiesDTO', fecthedActivitiesDTO);
-          console.log('activities', activities);
         } else {
           console.log('Empty response');
         }
@@ -68,7 +64,6 @@ const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, u
       .catch((error) => {
         console.error(error);
       });
-    console.log('activityDoneObject');
   }
 
   const handleActivityPress = (activity: ActivityDTO) => {

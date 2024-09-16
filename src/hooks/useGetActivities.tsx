@@ -4,7 +4,7 @@ import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO.tsx';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
 import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
-import UserModel from "../models/UserModel.ts";
+import UserModel from '../models/UserModel.ts';
 
 export const useGetActivities = (selectedDay: string, getActivities: string, setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>, user: UserModel) => {
     const [loading, setLoading] = useState(true);
@@ -62,13 +62,11 @@ export const useGetActivities = (selectedDay: string, getActivities: string, set
                 item.weekObjective,
             ));
             for (let i = 0; i < dataActivitiesProgress.length; i++) {
-                console.log('SAVE', dataActivitiesProgress[i].activityDone.activitySave);
                 if (dataActivitiesProgress[i].activityDone.id === 0) {
                     dataActivitiesProgress[i].activityDone.id = idRef.current;
                     idRef.current--;
                 }
             }
-            console.log(dataActivitiesProgress);
             setActivities(dataActivitiesProgress);
         } catch (e) {
             setError('An error occurred while fetching data');

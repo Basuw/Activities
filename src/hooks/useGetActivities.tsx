@@ -5,6 +5,7 @@ import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
 import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
 import UserModel from '../models/UserModel.ts';
+import dayjs from "dayjs";
 
 export const useGetActivities = (selectedDay: string, getActivities: string, setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>, user: UserModel) => {
     const [loading, setLoading] = useState(true);
@@ -31,6 +32,8 @@ export const useGetActivities = (selectedDay: string, getActivities: string, set
     const fetchActivitiesDone = async () => {
         setLoading(true);
         try {
+            console.log(`Fetching activities for user ${user.id} on ${selectedDay}`);
+            console.log(`dayjs().format('YYYY-MM-DD')`,dayjs().format('YYYY-MM-DD'));
             const url = `${DEV_API_URL}/day_activities/user_id/${user.id}?date=${selectedDay}`;
             const response = await fetch(url);
             const data = await response.json();

@@ -33,7 +33,8 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   const swipeableRef = useRef<SwipeableMethods | null>(null);
 
   function postActivityDone() {
-    const url = `${DEV_API_URL}/achieve?doneOn=${ dayjs().format('YYYY-MM-DD HH:mm:ss')}`;
+    const doneOne = activityDoneObject.doneOn.toString() === dayjs().format('YYYY-MM-DD') ? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
+    const url = `${DEV_API_URL}/achieve?doneOn=${ doneOne }`;
     const activitySave = activity.activityDone.activitySave;
     fetch(url, {
       method: 'POST',

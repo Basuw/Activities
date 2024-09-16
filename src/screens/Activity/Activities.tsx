@@ -34,8 +34,8 @@ const Activities = (props: { user:UserModel }) => {
     }
 
     logTimeoutRef.current = setTimeout(() => {
-      console.log(`Selected Day: ${day}`);
-    }, 100); // Adjust the delay as needed
+      console.log(`Selected Day oui: ${day}`);
+    }, 150); // Adjust the delay as needed
   };
 
   const getCurrentMonth = () => {

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from 'styled-components';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ActivitySection from '../../components/Activity/ActivitySection';
@@ -8,7 +8,7 @@ import StubService from '../../services/stub.ts';
 import { useGetActivities } from '../../hooks/useGetActivities.tsx';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
 import AddActivitySave from '../../components/Activity/AddActivitySave.tsx';
-import UserModel from "../../models/UserModel.ts";
+import UserModel from '../../models/UserModel.ts';
 
 const Activities = (props: { user:UserModel }) => {
   const theme = useTheme();
@@ -52,10 +52,7 @@ const Activities = (props: { user:UserModel }) => {
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.background }]}>
       <Text style={[styles.monthText, { color: theme.foreground }]}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <ActivitySection title="Morning Activities" activities={activities} selectedDay={selectedDay}/>
-        {/* Add more ActivitySection components as needed */}
-      </ScrollView>
       <TouchableOpacity style={[styles.addActivity,{backgroundColor: theme.purple}]} onPress={toggleModal}>
         <MaterialCommunityIcons name="plus" size={24} color='white' />
       </TouchableOpacity>
@@ -73,9 +70,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
-  },
-  scrollViewContent: {
-    paddingBottom: 100, // Ensure content is above the FAB
   },
   addActivity: {
     position: 'absolute',

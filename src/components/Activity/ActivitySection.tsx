@@ -1,8 +1,8 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import Activity from './Activity';
 import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
-import {useTheme} from 'styled-components';
+import { useTheme } from 'styled-components';
 
 interface ActivitySectionProps {
   title: string;
@@ -10,15 +10,24 @@ interface ActivitySectionProps {
   selectedDay: Date;
 }
 
-const ActivitySection: React.FC<ActivitySectionProps> = ({title, activities, selectedDay}) => {
+const ActivitySection: React.FC<ActivitySectionProps> = ({ title, activities, selectedDay }) => {
   const theme = useTheme();
 
+  const renderItem = ({ item }: { item: ActivityProgressModel }) => (
+    <Activity
+      activity={item}
+      selectedDay={selectedDay}
+    />
+  );
+
   return (
-    <View style={[styles.container, {backgroundColor: theme.viewColor}]}>
-      <Text style={[styles.title, {color: theme.foreground}]}>{title}</Text>
-      {activities.length > 0 && activities.map((activity) => (
-        <Activity key={activity.activityDone.id} activity={activity} selectedDay={selectedDay}/>
-      ))}
+    <View style={[styles.container, { backgroundColor: theme.viewColor }]}>
+      <Text style={[styles.title, { color: theme.foreground }]}>{title}</Text>
+      <FlatList
+        data={activities}
+        renderItem={renderItem}
+        keyExtractor={(item) => `${item.activityDone.id}-${item.activityDone.doneOn}`}
+      />
     </View>
   );
 };

@@ -71,7 +71,6 @@ const DayMenu: React.FC<DayMenuProps> = ({ selectedDay, onDaySelect }) => {
     if (days[currentIndex]) {
       const selectedDay = days[currentIndex].fullDate;
       onDaySelect(selectedDay);
-      console.log(`Selected Day: ${selectedDay}`);
     }
   };
 

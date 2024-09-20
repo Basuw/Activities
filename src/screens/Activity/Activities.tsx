@@ -34,7 +34,7 @@ const Activities = (props: { user:UserModel }) => {
     }
 
     logTimeoutRef.current = setTimeout(() => {
-      console.log(`Selected Day oui: ${day}`);
+      console.log(`Selected Day: ${day}`);
     }, 150); // Adjust the delay as needed
   };
 

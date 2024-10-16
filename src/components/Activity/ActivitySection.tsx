@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import Activity from './Activity';
-import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
+import ActivityProgressModel from '../../models/Activities/ActivityProgressModel';
 import { useTheme } from 'styled-components';
 
 interface ActivitySectionProps {

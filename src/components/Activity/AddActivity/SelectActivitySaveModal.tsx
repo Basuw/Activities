@@ -1,12 +1,12 @@
-// src/components/Activity/AddActivitySave.tsx
+// src/components/Activity/SelectActivitySaveModal.tsx
 import React, {useEffect, useState} from 'react';
 import {Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 import {DEV_API_URL} from '@env';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useTheme} from 'styled-components';
 import ActivityDetailsModal from './ActivityDetailsModal.tsx';
-import UserModel from '../../models/UserModel.ts';
-import ActivityDTO from '../../dto/activities/ActivityDTO.tsx';
+import UserModel from '../../../models/UserModel.ts';
+import ActivityDTO from '../../../dto/activities/ActivityDTO.tsx';
 
 interface AddActivitySaveProps {
   isVisible: boolean;
@@ -14,7 +14,7 @@ interface AddActivitySaveProps {
   onClose: () => void;
 }
 
-const AddActivitySave: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, user }) => {
+const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, user }) => {
   const theme = useTheme();
   const [activities, setActivities] = useState<{ [key: string]: ActivityDTO[] }>({});
   const [selectedActivity, setSelectedActivity] = useState<ActivityDTO | null>(null);
@@ -142,10 +142,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   modalContent: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
@@ -158,13 +158,14 @@ const styles = StyleSheet.create({
   categoryHeader: {
     flexDirection: 'row',
     marginBottom: 10,
-    paddingLeft: 20, // Adjust padding to add space from the left edge
+    textAlign: 'left',
+    alignContent: 'center',
   },
   activityItem: {
     flexDirection: 'row',
     marginBottom: 5,
-    paddingLeft: 30, // Add padding to indent the list of categories
+    paddingLeft: 40, // Augmenter le padding pour décaler les noms des activités
   },
 });
 
-export default AddActivitySave;
+export default SelectActivitySaveModal;

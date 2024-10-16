@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts';
+import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
 import ReanimatedSwipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';

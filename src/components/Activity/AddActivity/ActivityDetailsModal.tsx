@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
-import ActivityDTO from "../../dto/activities/ActivityDTO.tsx";
+import ActivityDTO from '../../../dto/activities/ActivityDTO';
 
 interface ActivityDetailsModalProps {
   isVisible: boolean;
@@ -22,6 +22,11 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
     );
   };
 
+  const handleSave = () => {
+    // Logic to save the activity
+    onClose();
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -35,32 +40,32 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
             <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
               <Text style={{ color: theme.foreground, fontSize: 18, marginBottom: 10 }}>{activity.name}</Text>
               <Text style={{ color: theme.foreground, marginBottom: 10 }}>Select Days:</Text>
-              <View style={styles.daysContainer}>
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+              <View style={styles.calendarContainer}>
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
                   <TouchableOpacity
-                    key={day}
+                    key={index}
                     onPress={() => handleDaySelect(day)}
                     style={[
                       styles.dayButton,
                       selectedDays.includes(day) && { backgroundColor: theme.purple },
                     ]}
                   >
-                    <Text style={{ color: theme.foreground }}>{day}</Text>
+                    <Text style={{ color: theme.foreground }}>{day[1]}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
               <Text style={{ color: theme.foreground, marginBottom: 10 }}>Frequency:</Text>
               <Text style={{ color: theme.foreground, marginBottom: 10 }}>{frequency} times per week</Text>
-              <TouchableOpacity onPress={() => setFrequency((prev) => prev + 1)}>
-                <Text style={{ color: theme.foreground }}>Increase Frequency</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setFrequency((prev) => Math.max(1, prev - 1))}>
-                <Text style={{ color: theme.foreground }}>Decrease Frequency</Text>
-              </TouchableOpacity>
-              <Text style={{ color: theme.foreground, marginBottom: 10 }}>Objective:</Text>
-              <Text style={{ color: theme.foreground, marginBottom: 10 }}>{objective}</Text>
-              <TouchableOpacity onPress={() => setObjective('New Objective')}>
-                <Text style={{ color: theme.foreground }}>Set Objective</Text>
+              <View style={styles.frequencyButtons}>
+                <TouchableOpacity onPress={() => setFrequency((prev) => Math.max(1, prev - 1))} style={styles.frequencyButton}>
+                  <Text style={{ color: theme.foreground }}>-</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setFrequency((prev) => prev + 1)} style={styles.frequencyButton}>
+                  <Text style={{ color: theme.foreground }}>+</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity onPress={handleSave} style={[styles.saveButton, { backgroundColor: 'limegreen' }]}>
+                <Text style={{ color: 'white' }}>Save Activity</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <MaterialCommunityIcons name="close" size={24} color={theme.foreground} />
@@ -87,10 +92,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  daysContainer: {
+  calendarContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     marginBottom: 10,
   },
   dayButton: {
@@ -98,6 +102,25 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     backgroundColor: 'lightgray',
+  },
+  frequencyButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '50%',
+    marginBottom: 10,
+  },
+  frequencyButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: 'lightgray',
+    alignItems: 'center',
+    width: 40,
+  },
+  saveButton: {
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
   },
   closeButton: {
     position: 'absolute',

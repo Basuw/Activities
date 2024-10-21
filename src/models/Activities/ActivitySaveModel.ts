@@ -7,6 +7,8 @@ class ActivitySaveModel {
   objective: number;
   time: Date;
   activity: ActivityModel;
+  day: string;
+  notes: string;
   user: UserModel;
 
   constructor(
@@ -15,6 +17,8 @@ class ActivitySaveModel {
     objective: number,
     time: Date,
     activity: ActivityModel,
+    day: string,
+    notes: string,
     user: UserModel
   ) {
     this.id = id;
@@ -22,6 +26,8 @@ class ActivitySaveModel {
     this.objective = objective;
     this.time = time;
     this.activity = activity;
+    this.day = day;
+    this.notes = notes;
     this.user = user;
   }
 }

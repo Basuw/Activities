@@ -1,32 +1,89 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, TouchableWithoutFeedback, TextInput } from 'react-native';
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
+import { DEV_API_URL } from '@env';
 import Slider from '@react-native-community/slider';
 import ActivityDTO from '../../../dto/activities/ActivityDTO';
+import UserModel from '../../../models/UserModel.ts';
+import PostActivitySaveDTO from '../../../dto/activities/postActivitySave/PostActivitySaveDTO.tsx';
+import PostActivityDTO from '../../../dto/activities/postActivitySave/PostActivityDTO.tsx';
+import PostUserDTO from '../../../dto/activities/postActivitySave/PostUserDTO.tsx';
+import DayEnum from '../../../models/Activities/DayEnum.ts';
 
 interface ActivityDetailsModalProps {
   isVisible: boolean;
   activity: ActivityDTO;
   onClose: () => void;
+  user: UserModel;
 }
 
-const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, activity, onClose }) => {
+const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, activity, onClose, user }) => {
   const theme = useTheme();
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<number>(1);
   const [objective, setObjective] = useState<number>(0);
 
   const handleDaySelect = (day: string) => {
-    setSelectedDays((prevDays) =>
-      prevDays.includes(day) ? prevDays.filter((d) => d !== day) : [...prevDays, day]
-    );
+    setSelectedDay(day === selectedDay ? null : day);
   };
 
   const handleSave = () => {
-    // Logic to save the activity
+    postActivitySave();
     onClose();
   };
+
+  const postActivitySave = () => {
+    const activitySave = new PostActivitySaveDTO(
+      frequency,
+      objective,
+      'notes',
+      new PostActivityDTO(activity.id),
+      new PostUserDTO(user.id),
+      dayEnumFromString(),
+    );
+
+    const url = `${DEV_API_URL}/save`;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(activitySave),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw new Error('Failed to fetch data');
+        }
+      })
+      .catch((error) => {
+        console.error('Error while posting new activitySave:', error);
+      });
+  };
+
+  const dayEnumFromString = (): DayEnum | undefined => {
+    switch (selectedDay) {
+      case 'Mo':
+        return DayEnum.MONDAY;
+      case 'Tu':
+        return DayEnum.TUESDAY;
+      case 'We':
+        return DayEnum.WEDNESDAY;
+      case 'Th':
+        return DayEnum.THURSDAY;
+      case 'Fr':
+        return DayEnum.FRIDAY;
+      case 'Sa':
+        return DayEnum.SATURDAY;
+      case 'Su':
+        return DayEnum.SUNDAY;
+      default:
+        return;
+    }
+  }
 
   return (
     <Modal
@@ -49,10 +106,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
                       onPress={() => handleDaySelect(day)}
                       style={[
                         styles.dayButton,
-                        selectedDays.includes(day) && { backgroundColor: theme.purple },
+                        selectedDay === day && { backgroundColor: theme.purple },
                       ]}
                     >
-                      <Text style={{ color: selectedDays.includes(day) ? theme.foreground : theme.purple }}>{day}</Text>
+                      <Text style={{ color: selectedDay === day ? theme.foreground : theme.purple }}>{day}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -61,10 +118,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
                   <Text style={{ color: theme.foreground, marginBottom: 20 }}>{frequency} times per week</Text>
                   <View style={styles.frequencyButtons}>
                     <TouchableOpacity onPress={() => setFrequency((prev) => Math.max(1, prev - 1))} style={styles.frequencyButton}>
-                      <Text style={{ color: theme.foreground }}>-</Text>
+                      <Text style={{ color: theme.purple }}>-</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setFrequency((prev) => prev + 1)} style={styles.frequencyButton}>
-                      <Text style={{ color: theme.foreground }}>+</Text>
+                      <Text style={{ color: theme.purple }}>+</Text>
                     </TouchableOpacity>
                   </View>
                   <Text style={{ color: theme.foreground, marginBottom: 20 }}>Objective:</Text>
@@ -85,8 +142,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
                     minimumTrackTintColor={theme.purple}
                     maximumTrackTintColor={theme.foreground}
                   />
-                  <TouchableOpacity onPress={handleSave} style={[styles.saveButton, { backgroundColor: 'limegreen' }]}>
-                    <Text style={{ color: 'white' }}>Save Activity</Text>
+                  <TouchableOpacity onPress={handleSave} style={[styles.saveButton, { backgroundColor: 'limegreen', marginTop: 20 }]}>
+                    <Text style={{ color: theme.foreground }}>Save Activity</Text>
                   </TouchableOpacity>
                 </View>
               </View>

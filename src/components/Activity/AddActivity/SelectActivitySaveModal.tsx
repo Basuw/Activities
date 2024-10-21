@@ -124,6 +124,7 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
           isVisible={!!selectedActivity}
           activity={selectedActivity}
           onClose={closeActivityDetails}
+          user={user}
         />
       )}
     </Modal>

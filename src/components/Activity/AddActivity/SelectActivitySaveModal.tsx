@@ -12,9 +12,10 @@ interface AddActivitySaveProps {
   isVisible: boolean;
   user: UserModel;
   onClose: () => void;
+  fetchActivitiesDone: () => void;
 }
 
-const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, user }) => {
+const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, onClose, user, fetchActivitiesDone}) => {
   const theme = useTheme();
   const [activities, setActivities] = useState<{ [key: string]: ActivityDTO[] }>({});
   const [selectedActivity, setSelectedActivity] = useState<ActivityDTO | null>(null);
@@ -71,6 +72,7 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
   };
 
   const closeActivityDetails = () => {
+    onClose();
     setSelectedActivity(null);
   };
 
@@ -125,6 +127,7 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
           activity={selectedActivity}
           onClose={closeActivityDetails}
           user={user}
+          refreshActivities={fetchActivitiesDone}
         />
       )}
     </Modal>

@@ -15,9 +15,10 @@ const Activities = (props: { user:UserModel }) => {
   const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
   const stubService = new StubService();
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
-  const [getActivities] = useState(new Date().toISOString().split('T')[1].split('.')[0]);
-  const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities, stubService.user);
+  const [getActivities, setGetActivities] = useState(new Date().toISOString().split('T')[1].split('.'));
+  const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities, props.user);
   const [isModalVisible, setModalVisible] = useState(false);
+
 
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
@@ -26,7 +27,7 @@ const Activities = (props: { user:UserModel }) => {
       return; // Do nothing if the selected day is the same as the current day
     }
 
-    setActivities([]); // Clear activities before setting the new day
+    fetchActivities();
     setSelectedDay(day);
 
     if (logTimeoutRef.current) {
@@ -36,6 +37,11 @@ const Activities = (props: { user:UserModel }) => {
     logTimeoutRef.current = setTimeout(() => {
       console.log(`Selected Day: ${day}`);
     }, 150); // Adjust the delay as needed
+  };
+
+  const fetchActivities = () =>{
+    setActivities([]); // Clear activities before setting the new day
+    setGetActivities(new Date().toISOString().split('T'));
   };
 
   const getCurrentMonth = () => {
@@ -56,7 +62,7 @@ const Activities = (props: { user:UserModel }) => {
       <TouchableOpacity style={[styles.addActivity,{backgroundColor: theme.purple}]} onPress={toggleModal}>
         <MaterialCommunityIcons name="plus" size={24} color='white' />
       </TouchableOpacity>
-      <SelectActivitySaveModal isVisible={isModalVisible} onClose={toggleModal} user={props.user}/>
+      <SelectActivitySaveModal isVisible={isModalVisible} onClose={toggleModal} user={props.user} fetchActivitiesDone={fetchActivities}/>
     </SafeAreaView>
   );
 };

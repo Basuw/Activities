@@ -16,9 +16,10 @@ interface ActivityDetailsModalProps {
   activity: ActivityDTO;
   onClose: () => void;
   user: UserModel;
+  refreshActivities: () => void; // Add this prop
 }
 
-const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, activity, onClose, user }) => {
+const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, activity, onClose, user, refreshActivities}) => {
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<number>(1);
@@ -31,6 +32,7 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
   const handleSave = () => {
     postActivitySave();
     onClose();
+    refreshActivities();
   };
 
   const postActivitySave = () => {

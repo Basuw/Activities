@@ -5,9 +5,8 @@ import ActivityProgressModel from '../models/Activities/ActivityProgressModel.ts
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO.tsx';
 import ActivityDTO from '../dto/activities/ActivityDTO.tsx';
 import UserModel from '../models/UserModel.ts';
-import dayjs from "dayjs";
 
-export const useGetActivities = (selectedDay: string, getActivities: string, setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>, user: UserModel) => {
+export const useGetActivities = (selectedDay: string, getActivities: string[], setActivities: React.Dispatch<React.SetStateAction<ActivityProgressModel[]>>, user: UserModel) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<null | string>(null);
     const timeoutRef = useRef<null | NodeJS.Timeout>(null);

@@ -8,6 +8,7 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import { DEV_API_URL } from '@env';
 import StatusEnum from '../../models/Activities/StatusEnum.ts';
 import LinearGradient from 'react-native-linear-gradient';
+import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal.tsx';
 import dayjs from 'dayjs';
 
 interface ActivityProps {
@@ -31,6 +32,16 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
 
   const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods | null>(null);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+
+  const handleEditPress = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleSave = (updatedActivity: ActivityDoneDTO) => {
+    setActivityDoneObject(updatedActivity);
+    // Vous pouvez également ajouter une logique pour sauvegarder les modifications sur le serveur ici
+  };
 
   function postActivityDone() {
     const doneOne = activityDoneObject.doneOn.toString() === dayjs().format('YYYY-MM-DD') ? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
@@ -96,6 +107,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
         setActivityDoneObject(responseData);
       });
   };
+
 
   const handleSwipeLeft = () => {
     if (activityDoneObject.achievement !== activityDoneObject.activitySave.objective) {
@@ -181,6 +193,8 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   };
 
   return (
+      <View>
+        <TouchableOpacity onPress={handleEditPress}>
     <ReanimatedSwipeable
       ref={swipeableRef}
       containerStyle={styles.swipeableContainer}
@@ -214,6 +228,14 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
         </View>
       </View>
     </ReanimatedSwipeable>
+    </TouchableOpacity>
+    <ActivityDoneEditModal
+      isVisible={isEditModalVisible}
+      activity={activityDoneObject}
+      onClose={() => setEditModalVisible(false)}
+      onSave={handleSave}
+    />
+  </View>
   );
 };
 

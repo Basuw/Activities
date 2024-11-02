@@ -5,6 +5,8 @@ import ActivityDoneDTO from '../../../dto/activities/ActivityDoneDTO.tsx';
 import { useTheme } from 'styled-components';
 // @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+// @ts-ignore
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 interface ActivityDoneEditModalProps {
   isVisible: boolean;
@@ -17,6 +19,7 @@ const ActivityDoneEditModal: React.FC<ActivityDoneEditModalProps> = ({ isVisible
   const [achievement, setAchievement] = useState(activity.achievement);
   const [notes, setNotes] = useState(activity.notes);
   const [mark, setMark] = useState(activity.mark);
+  const [height, setHeight] = useState(10);
 
   const theme = useTheme();
 
@@ -28,6 +31,10 @@ const ActivityDoneEditModal: React.FC<ActivityDoneEditModalProps> = ({ isVisible
 
   const incrementAchievement = () => setAchievement(prev => prev + 1);
   const decrementAchievement = () => setAchievement(prev => Math.max(0, prev - 1));
+
+  const handleStarPress = (index: number) => {
+    setMark(index + 1);
+  };
 
   return (
     <Modal
@@ -71,20 +78,27 @@ const ActivityDoneEditModal: React.FC<ActivityDoneEditModalProps> = ({ isVisible
                 </View>
                 <Text style={[styles.objectiveText, { color: theme.foreground }]}>/{activity.activitySave.objective}</Text>
               </View>
-              <Text style={[styles.fieldTitle, { color: theme.foreground }]}>Notes</Text>
+              <Text style={[styles.fieldTitle,  { color: theme.foreground}]}>Notes</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: theme.foreground, width: '100%', minHeight: height }]}
                 placeholder="Notes"
                 value={notes}
                 onChangeText={setNotes}
+                multiline
+                onContentSizeChange={(e) => setHeight(e.nativeEvent.contentSize.height)}
               />
               <Text style={[styles.fieldTitle, { color: theme.foreground }]}>Mark</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Mark"
-                value={mark.toString()}
-                onChangeText={(text) => setMark(Number(text))}
-              />
+              <View style={styles.starsContainer}>
+                {[...Array(5)].map((_, index) => (
+                  <TouchableOpacity key={index} onPress={() => handleStarPress(index)}>
+                    <FontAwesome
+                      name={index < mark ? 'star' : 'star-o'}
+                      size={24}
+                      color={theme.purple}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
               <Button title="Save" onPress={handleSave} />
               <Button title="Cancel" onPress={onClose} />
             </View>
@@ -115,6 +129,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   fieldTitle: {
+    marginTop: 20,
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -141,12 +156,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     paddingHorizontal: 10,
     textAlign: 'center',
+    borderRadius: 8,
   },
   arrowButton: {
     padding: 10,
   },
   objectiveText: {
     fontSize: 18,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
   },
 });
 

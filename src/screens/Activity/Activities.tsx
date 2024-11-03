@@ -32,14 +32,15 @@ const Activities = (props: { user:UserModel }) => {
       clearTimeout(logTimeoutRef.current);
     }
     setSelectedDay(day);
-    console.log(`Selected Day1: ${day}`);
+    console.log(`Selected Day1: ${selectedDay}`);
 
     logTimeoutRef.current = setTimeout(() => {
-      console.log(`Selected Day2: ${day}`);
+      console.log(`Selected Day2: ${selectedDay}`);
       fetchActivities();
+      console.log(`------`);
 
     }, 150); // Adjust the delay as needed
-    console.log(`Selected Day3: ${day}`);
+    console.log(`Selected Day3: ${selectedDay}`);
 
   };
 

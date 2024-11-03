@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Dimensions, StyleSheet, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { useTheme } from 'styled-components';
 import dayjs from "dayjs";
+import debounce from 'lodash/debounce';
 
 const screenWidth = Dimensions.get('window').width;
 const dayWidth = screenWidth / 5;
@@ -51,6 +52,7 @@ const DayMenu: React.FC<DayMenuProps> = ({ selectedDay, onDaySelect }) => {
         const currentDayIndex = generatedDays.findIndex(day => day.fullDate === dayjs().format('YYYY-MM-DD'));
         const offset = currentDayIndex * dayWidth; // Adjust to center as the 3rd element
         scrollViewRef.current.scrollTo({ x: offset, animated: true });
+        onDaySelect(generatedDays[currentDayIndex].fullDate); // Call onDaySelect with the initial selected day
       }
     }, 100);
   }, []);
@@ -65,12 +67,18 @@ const DayMenu: React.FC<DayMenuProps> = ({ selectedDay, onDaySelect }) => {
     }
   };
 
+  const debouncedOnDaySelect = useCallback(debounce((day: string) => {
+    onDaySelect(day);
+  }, 300), [onDaySelect]);
+
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const currentIndex = Math.round(offsetX / dayWidth);
     if (days[currentIndex]) {
-      const selectedDay = days[currentIndex].fullDate;
-      onDaySelect(selectedDay);
+      const newSelectedDay = days[currentIndex].fullDate;
+      if (newSelectedDay !== selectedDay) {
+        debouncedOnDaySelect(newSelectedDay);
+      }
     }
   };
 

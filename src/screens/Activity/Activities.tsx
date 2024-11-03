@@ -4,20 +4,21 @@ import { useTheme } from 'styled-components';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ActivitySection from '../../components/Activity/ActivitySection';
 import DayMenu from '../../components/Activity/DaysMenu';
-import StubService from '../../services/stub.ts';
-import { useGetActivities } from '../../hooks/useGetActivities.tsx';
+import { DEV_API_URL } from '@env';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
 import SelectActivitySaveModal from '../../components/Activity/AddActivity/SelectActivitySaveModal.tsx';
 import UserModel from '../../models/UserModel.ts';
+import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
+import ActivitySaveDTO from '../../dto/activities/ActivitySaveDTO.tsx';
+import ActivityDTO from '../../dto/activities/ActivityDTO.tsx';
 
 const Activities = (props: { user:UserModel }) => {
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
-  const stubService = new StubService();
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
-  const [getActivities, setGetActivities] = useState(new Date().toISOString().split('T')[1].split('.'));
-  const [loading, error] = useGetActivities(selectedDay, getActivities, setActivities, props.user);
+  const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
+  const idRef = useRef(-1);
 
 
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
@@ -27,21 +28,86 @@ const Activities = (props: { user:UserModel }) => {
       return; // Do nothing if the selected day is the same as the current day
     }
 
-    fetchActivities();
-    setSelectedDay(day);
-
     if (logTimeoutRef.current) {
       clearTimeout(logTimeoutRef.current);
     }
+    setSelectedDay(day);
+    console.log(`Selected Day1: ${day}`);
 
     logTimeoutRef.current = setTimeout(() => {
-      console.log(`Selected Day: ${day}`);
+      console.log(`Selected Day2: ${day}`);
+      fetchActivities();
+
     }, 150); // Adjust the delay as needed
+    console.log(`Selected Day3: ${day}`);
+
   };
+
+  const fetchActivitiesDone = () => {
+    setLoading(true);
+    let data;
+    try {
+      console.log('selectedDay fetch',selectedDay);
+      const url = `${DEV_API_URL}/day_activities/user_id/${props.user.id}?date=${selectedDay}`;
+      fetch(url).then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw new Error('Failed to fetch data');
+        }
+      })
+      .then((responseData) => {
+        data = responseData;
+        setActivities(setActivityDoneObjectList(data));
+      });
+    } catch (e) {
+      console.log('An error occurred while fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setActivityDoneObjectList = (data:string[]) => {
+    const dataActivitiesProgress: ActivityProgressModel[] = data.map((item: any) => new ActivityProgressModel(
+        new ActivityDoneDTO(
+            item.activityDone.id,
+            item.activityDone.achievement,
+            item.activityDone.doneOn,
+            new ActivitySaveDTO(
+                item.activityDone.activitySave.id,
+                item.activityDone.activitySave.frequency,
+                item.activityDone.activitySave.objective,
+                new ActivityDTO(
+                    item.activityDone.activitySave.activity.id,
+                    item.activityDone.activitySave.activity.name,
+                    item.activityDone.activitySave.activity.description,
+                    item.activityDone.activitySave.activity.unity,
+                    item.activityDone.activitySave.activity.icon,
+                    item.activityDone.activitySave.activity.category,
+                    item.activityDone.activitySave.activity.userId,
+                ),
+                item.activityDone.activitySave.userId),
+            item.activityDone.mark,
+            item.activityDone.notes,
+            item.activityDone.status,
+            item.activityDone.duration,
+        ),
+        item.weekProgress,
+        item.weekObjective,
+    ));
+    for (let i = 0; i < dataActivitiesProgress.length; i++) {
+      if (dataActivitiesProgress[i].activityDone.id === 0) {
+        dataActivitiesProgress[i].activityDone.id = idRef.current;
+        idRef.current--;
+      }
+    }
+    return dataActivitiesProgress;
+  };
+
 
   const fetchActivities = () =>{
     setActivities([]); // Clear activities before setting the new day
-    setGetActivities(new Date().toISOString().split('T'));
+    fetchActivitiesDone();
   };
 
   const getCurrentMonth = () => {

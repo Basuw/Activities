@@ -14,9 +14,10 @@ import dayjs from 'dayjs';
 interface ActivityProps {
   activity: ActivityProgressModel;
   selectedDay: Date
+  fetchActivities: () => void;
 }
 
-const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
+const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivities}) => {
   const [activityDoneObject, setActivityDoneObject] = useState(
     new ActivityDoneDTO(
       activity.activityDone.id,
@@ -39,8 +40,8 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   };
 
   const handleSave = (updatedActivity: ActivityDoneDTO) => {
-    setActivityDoneObject(updatedActivity);
-    // Vous pouvez également ajouter une logique pour sauvegarder les modifications sur le serveur ici
+    console.log('updatedActivity',updatedActivity);
+    updateActivityDone(activityDoneObject);
   };
 
   function postActivityDone() {
@@ -74,6 +75,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
       .then((responseData) => {
         responseData.activitySave = activitySave;
         setActivityDoneObject(responseData);
+        fetchActivities();
       })
       .catch((error) => {
         console.error(error);
@@ -105,6 +107,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
       .then((responseData) => {
         responseData.activitySave = activitySave;
         setActivityDoneObject(responseData);
+        fetchActivities();
       });
   };
 
@@ -112,7 +115,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   const handleSwipeLeft = () => {
     if (activityDoneObject.achievement !== activityDoneObject.activitySave.objective) {
       activityDoneObject.achievement = activityDoneObject.activitySave.objective;
-      updateActivityDone();
+      updateActivityDone(activityDoneObject);
     }
   };
 
@@ -123,18 +126,18 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
     console.log(message);
   };
 
-  const updateActivityDone = () => {
+  const updateActivityDone = (updatedActivity: ActivityDoneDTO) => {
     activityDoneObject.doneOn = selectedDay;
     if (activityDoneObject.id <= 0) {
       postActivityDone();
     } else {
       patchActivity(
-          activityDoneObject.id,
-          activityDoneObject.achievement,
+          updatedActivity.id,
+          updatedActivity.achievement,
           StatusEnum.COMPLETED,
-          activityDoneObject.mark,
-          activityDoneObject.notes,
-          activityDoneObject.duration
+          updatedActivity.mark,
+          updatedActivity.notes,
+          updatedActivity.duration
       );
     }
   };
@@ -146,7 +149,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
       end={{ x: 1, y: 0 }} // Fin du dégradé à droite
       style={styles.leftAction}
     >
-      <TouchableOpacity style={styles.actionButton} onPress={() => updateActivityDone()}>
+      <TouchableOpacity style={styles.actionButton} onPress={() => updateActivityDone(activityDoneObject)}>
         <MaterialCommunityIcons name="check" size={24} color="white" />
       </TouchableOpacity>
     </LinearGradient>

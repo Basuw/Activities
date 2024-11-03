@@ -128,6 +128,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivi
 
   const updateActivityDone = (updatedActivity: ActivityDoneDTO) => {
     activityDoneObject.doneOn = selectedDay;
+    console.log('selectedDay into update :',selectedDay);
     if (activityDoneObject.id <= 0) {
       postActivityDone();
     } else {

@@ -4,7 +4,7 @@ import {Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutF
 import {DEV_API_URL} from '@env';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useTheme} from 'styled-components';
-import ActivityDetailsModal from './ActivityDetailsModal.tsx';
+import ActivitySaveDetailsModal from './ActivitySaveDetailsModal.tsx';
 import UserModel from '../../../models/UserModel.ts';
 import ActivityDTO from '../../../dto/activities/ActivityDTO.tsx';
 
@@ -122,7 +122,7 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
         </View>
       </TouchableWithoutFeedback>
       {selectedActivity && (
-        <ActivityDetailsModal
+        <ActivitySaveDetailsModal
           isVisible={!!selectedActivity}
           activity={selectedActivity}
           onClose={closeActivityDetails}

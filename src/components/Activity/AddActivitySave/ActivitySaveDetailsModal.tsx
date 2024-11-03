@@ -11,7 +11,7 @@ import PostActivityDTO from '../../../dto/activities/postActivitySave/PostActivi
 import PostUserDTO from '../../../dto/activities/postActivitySave/PostUserDTO.tsx';
 import DayEnum from '../../../models/Activities/DayEnum.ts';
 
-interface ActivityDetailsModalProps {
+interface ActivitySaveDetailsModalProps {
   isVisible: boolean;
   activity: ActivityDTO;
   onClose: () => void;
@@ -19,7 +19,7 @@ interface ActivityDetailsModalProps {
   refreshActivities: () => void; // Add this prop
 }
 
-const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, activity, onClose, user, refreshActivities}) => {
+const ActivitySaveDetailsModal: React.FC<ActivitySaveDetailsModalProps> = ({ isVisible, activity, onClose, user, refreshActivities}) => {
   const theme = useTheme();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<number>(1);
@@ -229,4 +229,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ActivityDetailsModal;
+export default ActivitySaveDetailsModal;

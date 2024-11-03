@@ -6,7 +6,7 @@ import ActivitySection from '../../components/Activity/ActivitySection';
 import DayMenu from '../../components/Activity/DaysMenu';
 import { DEV_API_URL } from '@env';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
-import SelectActivitySaveModal from '../../components/Activity/AddActivity/SelectActivitySaveModal.tsx';
+import SelectActivitySaveModal from '../../components/Activity/AddActivitySave/SelectActivitySaveModal.tsx';
 import UserModel from '../../models/UserModel.ts';
 import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import ActivitySaveDTO from '../../dto/activities/ActivitySaveDTO.tsx';
@@ -31,17 +31,13 @@ const Activities = (props: { user:UserModel }) => {
     if (logTimeoutRef.current) {
       clearTimeout(logTimeoutRef.current);
     }
-    setSelectedDay(day);
-    console.log(`Selected Day1: ${selectedDay}`);
+
 
     logTimeoutRef.current = setTimeout(() => {
-      console.log(`Selected Day2: ${selectedDay}`);
+      setSelectedDay(day);
+      console.log(`Selected Day: ${selectedDay}`);
       fetchActivities();
-      console.log(`------`);
-
     }, 150); // Adjust the delay as needed
-    console.log(`Selected Day3: ${selectedDay}`);
-
   };
 
   const fetchActivitiesDone = () => {

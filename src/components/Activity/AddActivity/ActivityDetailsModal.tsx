@@ -31,8 +31,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({ isVisible, 
 
   const handleSave = () => {
     postActivitySave();
-    onClose();
     refreshActivities();
+    onClose();
   };
 
   const postActivitySave = () => {

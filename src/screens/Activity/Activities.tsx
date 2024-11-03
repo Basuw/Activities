@@ -125,7 +125,7 @@ const Activities = (props: { user:UserModel }) => {
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.background }]}>
       <Text style={[styles.monthText, { color: theme.foreground }]}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
-        <ActivitySection title="Morning Activities" activities={activities} selectedDay={selectedDay}/>
+        <ActivitySection title="Morning Activities" activities={activities} selectedDay={selectedDay} fetchActivities={fetchActivities}/>
       <TouchableOpacity style={[styles.addActivity,{backgroundColor: theme.purple}]} onPress={toggleModal}>
         <MaterialCommunityIcons name="plus" size={24} color='white' />
       </TouchableOpacity>

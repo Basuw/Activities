@@ -1,35 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
+// @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'styled-components';
 import ReanimatedSwipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
-import { DEV_API_URL } from '@env';
-import StatusEnum from '../../models/Activities/StatusEnum.ts';
 import LinearGradient from 'react-native-linear-gradient';
 import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal.tsx';
-import dayjs from 'dayjs';
+import {callApiService} from '../../services/activities/callAPIService.ts';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
   selectedDay: Date
-  fetchActivities: () => void;
 }
 
-const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivities}) => {
-  const [activityDoneObject, setActivityDoneObject] = useState(
-    new ActivityDoneDTO(
-      activity.activityDone.id,
-      activity.activityDone.achievement,
-      activity.activityDone.doneOn,
-      activity.activityDone.activitySave,
-      activity.activityDone.mark,
-      activity.activityDone.notes,
-      activity.activityDone.status,
-      activity.activityDone.duration
-    )
-  );
+const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
+  const [activityProgressModel, setActivityProgressModel] = useState(activity);
 
   const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods | null>(null);
@@ -40,82 +27,17 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivi
   };
 
   const handleSave = (updatedActivity: ActivityDoneDTO) => {
+    console.log('Swippe full detected');
     console.log('updatedActivity',updatedActivity);
-    updateActivityDone(activityDoneObject);
+    activityProgressModel.activityDone = updatedActivity;
+    createOrUpdateActivityDone(activityProgressModel.activityDone);
   };
-
-  function postActivityDone() {
-    const doneOne = activityDoneObject.doneOn.toString() === dayjs().format('YYYY-MM-DD') ? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
-    const url = `${DEV_API_URL}/achieve?doneOn=${ doneOne }`;
-    const activitySave = activity.activityDone.activitySave;
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        achievement: activityDoneObject.achievement,
-        mark: activityDoneObject.mark,
-        notes: activityDoneObject.notes,
-        activitySave: {
-          id: activityDoneObject.activitySave.id,
-        },
-        status: StatusEnum.COMPLETED,
-        duration: activityDoneObject.duration,
-      }),
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        } else {
-          throw new Error('Failed to fetch data');
-        }
-      })
-      .then((responseData) => {
-        responseData.activitySave = activitySave;
-        setActivityDoneObject(responseData);
-        fetchActivities();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  const patchActivity = (
-    id: number,
-    achievement?: number,
-    status?: string,
-    mark?: number,
-    notes?: string,
-    duration?: Date
-  ) => {
-    const doneOne = activityDoneObject.doneOn.toString() === dayjs().format('YYYY-MM-DD') ? dayjs().format('YYYY-MM-DD HH:mm:ss') :  dayjs(activityDoneObject.doneOn).format('YYYY-MM-DD HH:mm:ss');
-    const url =
-      duration == null
-        ? `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&doneOn=${doneOne}`
-        : `${DEV_API_URL}/achieve/${id}?achievement=${achievement}&status=${status}&mark=${mark}&notes=${notes}&doneOn=${doneOne}duration=${duration}`;
-    const activitySave = activity.activityDone.activitySave;
-    fetch(url, {
-      method: 'PATCH',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
-      .then((responseData) => {
-        responseData.activitySave = activitySave;
-        setActivityDoneObject(responseData);
-        fetchActivities();
-      });
-  };
-
 
   const handleSwipeLeft = () => {
-    if (activityDoneObject.achievement !== activityDoneObject.activitySave.objective) {
-      activityDoneObject.achievement = activityDoneObject.activitySave.objective;
-      updateActivityDone(activityDoneObject);
+    console.log('Swipped left');
+    if (activityProgressModel.activityDone.achievement !== activityProgressModel.activityDone.activitySave.objective) {
+      activityProgressModel.activityDone.achievement = activityProgressModel.activityDone.activitySave.objective;
+      createOrUpdateActivityDone(activityProgressModel.activityDone);
     }
   };
 
@@ -126,20 +48,25 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivi
     console.log(message);
   };
 
-  const updateActivityDone = (updatedActivity: ActivityDoneDTO) => {
-    activityDoneObject.doneOn = selectedDay;
-    console.log('selectedDay into update :',selectedDay);
-    if (activityDoneObject.id <= 0) {
-      postActivityDone();
+  const createOrUpdateActivityDone = async (updatedActivity: ActivityDoneDTO) => {
+    activityProgressModel.activityDone.doneOn = selectedDay;
+    console.log('selectedDay into update :', selectedDay);
+    console.log('activityProgressModel', activityProgressModel);
+    if (activityProgressModel.activityDone.id <= 0) {
+      try {
+        const result = await callApiService.postActivityDone(updatedActivity);
+        console.log('result', result);
+        setActivityProgressModel(result);
+      } catch (error) {
+        console.error('Error posting activity:', error);
+      }
     } else {
-      patchActivity(
-          updatedActivity.id,
-          updatedActivity.achievement,
-          StatusEnum.COMPLETED,
-          updatedActivity.mark,
-          updatedActivity.notes,
-          updatedActivity.duration
-      );
+      try {
+        const result = await callApiService.patchActivityDone(updatedActivity);
+        setActivityProgressModel(result);
+      } catch (error) {
+        console.error('Error posting activity:', error);
+      }
     }
   };
 
@@ -150,7 +77,7 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivi
       end={{ x: 1, y: 0 }} // Fin du dégradé à droite
       style={styles.leftAction}
     >
-      <TouchableOpacity style={styles.actionButton} onPress={() => updateActivityDone(activityDoneObject)}>
+      <TouchableOpacity style={styles.actionButton} onPress={() => createOrUpdateActivityDone(activityProgressModel.activityDone)}>
         <MaterialCommunityIcons name="check" size={24} color="white" />
       </TouchableOpacity>
     </LinearGradient>
@@ -211,31 +138,31 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay, fetchActivi
       <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
         <View style={styles.leftContainer}>
           <Text style={[styles.largeText, { color: theme.foreground }]}>
-            {activityDoneObject.achievement}/{activityDoneObject.activitySave.objective}
+            {activityProgressModel.activityDone.achievement}/{activityProgressModel.activityDone.activitySave.objective}
           </Text>
         </View>
         <View style={styles.centerContainer}>
           <Text style={[styles.activityName, { color: theme.foreground }]}>
-            {activityDoneObject.activitySave.activity.name}
+            {activityProgressModel.activityDone.activitySave.activity.name}
           </Text>
           <View style={styles.weekView}>
             <Text style={[styles.weekInfo, { color: theme.foreground }]}>
               {Math.round((activity.activityDone.achievement / activity.activityDone.activitySave.objective) * 100)}%
             </Text>
             <Text style={[styles.weekInfo, { color: theme.foreground }]}>
-              {activity.weekObjective}/{activityDoneObject.activitySave.frequency}
+              {activity.weekObjective}/{activityProgressModel.activityDone.activitySave.frequency}
             </Text>
           </View>
         </View>
         <View style={styles.rightContainer}>
-          <MaterialCommunityIcons name={activityDoneObject.activitySave.activity.icon} size={24} color={theme.foreground} />
+          <MaterialCommunityIcons name={activityProgressModel.activityDone.activitySave.activity.icon} size={24} color={theme.foreground} />
         </View>
       </View>
     </ReanimatedSwipeable>
     </TouchableOpacity>
     <ActivityDoneEditModal
       isVisible={isEditModalVisible}
-      activity={activityDoneObject}
+      activity={activityProgressModel.activityDone}
       onClose={() => setEditModalVisible(false)}
       onSave={handleSave}
     />

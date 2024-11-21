@@ -8,17 +8,15 @@ interface ActivitySectionProps {
   title: string;
   activities: ActivityProgressModel[];
   selectedDay: Date;
-  fetchActivities: () => void
 }
 
-const ActivitySection: React.FC<ActivitySectionProps> = ({ title, activities, selectedDay, fetchActivities}) => {
+const ActivitySection: React.FC<ActivitySectionProps> = ({ title, activities, selectedDay}) => {
   const theme = useTheme();
 
   const renderItem = ({ item }: { item: ActivityProgressModel }) => (
     <Activity
       activity={item}
       selectedDay={selectedDay}
-      fetchActivities={fetchActivities}
     />
   );
 

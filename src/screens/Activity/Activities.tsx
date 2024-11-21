@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from 'styled-components';
+// @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ActivitySection from '../../components/Activity/ActivitySection';
 import DayMenu from '../../components/Activity/DaysMenu';
@@ -16,7 +17,6 @@ const Activities = (props: { user: UserModel }) => {
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
-  const idRef = useRef(-1);
 
   const logTimeoutRef = useRef<null | NodeJS.Timeout>(null);
 
@@ -36,19 +36,17 @@ const Activities = (props: { user: UserModel }) => {
     }, 150); // Adjust the delay as needed
   };
 
-  const fetchActivities = () => {
+  const fetchActivities = async () => {
     setLoading(true);
     setActivities([]); // Clear activities before setting the new day
-    callApiService.fetchActivitiesDone(selectedDay, props.user.id)
-      .then((fetchedActivities) => {
-        setActivities(fetchedActivities);
-      })
-      .catch((error) => {
-        console.log('An error occurred while fetching data', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const fetchedActivities = await callApiService.fetchActivitiesDone(selectedDay, props.user.id);
+      setActivities(fetchedActivities);
+    } catch (error) {
+      console.log('An error occurred while fetching data', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getCurrentMonth = () => {
@@ -65,7 +63,7 @@ const Activities = (props: { user: UserModel }) => {
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.background }]}>
       <Text style={[styles.monthText, { color: theme.foreground }]}>{getCurrentMonth()}</Text>
       <DayMenu selectedDay={selectedDay} onDaySelect={handleDaySelect} />
-      <ActivitySection title="Morning Activities" activities={activities} selectedDay={selectedDay} fetchActivities={fetchActivities} />
+      <ActivitySection title="Morning Activities" activities={activities} selectedDay={selectedDay}/>
       <TouchableOpacity style={[styles.addActivity, { backgroundColor: theme.purple }]} onPress={toggleModal}>
         <MaterialCommunityIcons name="plus" size={24} color='white' />
       </TouchableOpacity>

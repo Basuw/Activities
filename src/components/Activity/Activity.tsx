@@ -8,14 +8,14 @@ import ReanimatedSwipeable, { SwipeableMethods } from 'react-native-gesture-hand
 import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import LinearGradient from 'react-native-linear-gradient';
 import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal.tsx';
-import {callApiService} from '../../services/activities/callAPIService.ts';
+import { callApiService } from '../../services/activities/callAPIService.ts';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
-  selectedDay: Date
+  selectedDay: Date;
 }
 
-const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
+const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const [activityProgressModel, setActivityProgressModel] = useState(activity);
 
   const theme = useTheme();
@@ -27,35 +27,28 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   };
 
   const handleSave = (updatedActivity: ActivityDoneDTO) => {
-    console.log('Swippe full detected');
-    console.log('updatedActivity',updatedActivity);
     activityProgressModel.activityDone = updatedActivity;
     createOrUpdateActivityDone(activityProgressModel.activityDone);
   };
 
-  const handleSwipeLeft = () => {
-    console.log('Swipped left');
+  const handleSwipeRight = () => {
+    console.log('Swiped right');
     if (activityProgressModel.activityDone.achievement !== activityProgressModel.activityDone.activitySave.objective) {
       activityProgressModel.activityDone.achievement = activityProgressModel.activityDone.activitySave.objective;
       createOrUpdateActivityDone(activityProgressModel.activityDone);
     }
   };
 
-  const handleSwipeRight = () => {
-  };
-
-  const logButtonPress = (message: string) => {
-    console.log(message);
+  const handleSwipeLeft = () => {
+    console.log('Swiped left');
+    // Ajoutez ici la logique pour le swipe à droite si nécessaire
   };
 
   const createOrUpdateActivityDone = async (updatedActivity: ActivityDoneDTO) => {
     activityProgressModel.activityDone.doneOn = selectedDay;
-    console.log('selectedDay into update :', selectedDay);
-    console.log('activityProgressModel', activityProgressModel);
     if (activityProgressModel.activityDone.id <= 0) {
       try {
         const result = await callApiService.postActivityDone(updatedActivity);
-        console.log('result', result);
         setActivityProgressModel(result);
       } catch (error) {
         console.error('Error posting activity:', error);
@@ -72,9 +65,9 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
 
   const renderLeftActions = () => (
     <LinearGradient
-      colors={['#56ab2f', '#a8e063']} // Dégradé de vert clair
-      start={{ x: 0, y: 0 }} // Début du dégradé à gauche
-      end={{ x: 1, y: 0 }} // Fin du dégradé à droite
+      colors={['#56ab2f', '#a8e063']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
       style={styles.leftAction}
     >
       <TouchableOpacity style={styles.actionButton} onPress={() => createOrUpdateActivityDone(activityProgressModel.activityDone)}>
@@ -88,19 +81,19 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
       <View style={styles.buttonGroup}>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: 'orange' }]}
-          onPress={() => logButtonPress('Extra Right Button 1 Pressed')}
+          onPress={() => console.log('Extra Right Button 1 Pressed')}
         >
           <MaterialCommunityIcons name="alert" size={24} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: 'yellow' }]}
-          onPress={() => logButtonPress('Extra Right Button 2 Pressed')}
+          onPress={() => console.log('Extra Right Button 2 Pressed')}
         >
           <MaterialCommunityIcons name="bell" size={24} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: 'red' }]}
-          onPress={() => logButtonPress('Right Button Pressed')}
+          onPress={() => console.log('Right Button Pressed')}
         >
           <MaterialCommunityIcons name="close" size={24} color="white" />
         </TouchableOpacity>
@@ -109,13 +102,13 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   );
 
   const handleSwipeableOpen = (direction: 'left' | 'right') => {
+    console.log(`Swipeable opened in direction: ${direction}`);
     if (direction === 'left') {
       handleSwipeLeft();
     } else if (direction === 'right') {
       handleSwipeRight();
     }
 
-    // Reset swipeable position after 3 seconds
     setTimeout(() => {
       if (swipeableRef.current) {
         swipeableRef.current.close();
@@ -124,62 +117,61 @@ const Activity: React.FC<ActivityProps> = ({ activity , selectedDay}) => {
   };
 
   return (
-      <View>
-        <TouchableOpacity onPress={handleEditPress}>
-    <ReanimatedSwipeable
-      ref={swipeableRef}
-      containerStyle={styles.swipeableContainer}
-      renderLeftActions={renderLeftActions}
-      renderRightActions={renderRightActions}
-      rightThreshold={50}
-      leftThreshold={100}
-      onSwipeableWillOpen={(direction: 'left' | 'right') => handleSwipeableOpen(direction)}
-    >
-      <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
-        <View style={styles.leftContainer}>
-          <Text style={[styles.largeText, { color: theme.foreground }]}>
-            {activityProgressModel.activityDone.achievement}/{activityProgressModel.activityDone.activitySave.objective}
-          </Text>
-        </View>
-        <View style={styles.centerContainer}>
-          <Text style={[styles.activityName, { color: theme.foreground }]}>
-            {activityProgressModel.activityDone.activitySave.activity.name}
-          </Text>
-          <View style={styles.weekView}>
-            <Text style={[styles.weekInfo, { color: theme.foreground }]}>
-              {Math.round((activity.activityDone.achievement / activity.activityDone.activitySave.objective) * 100)}%
-            </Text>
-            <Text style={[styles.weekInfo, { color: theme.foreground }]}>
-              {activity.weekObjective}/{activityProgressModel.activityDone.activitySave.frequency}
-            </Text>
+    <View>
+      <TouchableOpacity onPress={handleEditPress}>
+        <ReanimatedSwipeable
+          ref={swipeableRef}
+          containerStyle={styles.swipeableContainer}
+          renderLeftActions={renderLeftActions}
+          renderRightActions={renderRightActions}
+          rightThreshold={50}
+          leftThreshold={100}
+          onSwipeableWillOpen={(direction: 'left' | 'right') => handleSwipeableOpen(direction)}
+        >
+          <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
+            <View style={styles.leftContainer}>
+              <Text style={[styles.largeText, { color: theme.foreground }]}>
+                {activityProgressModel.activityDone.achievement}/{activityProgressModel.activityDone.activitySave.objective}
+              </Text>
+            </View>
+            <View style={styles.centerContainer}>
+              <Text style={[styles.activityName, { color: theme.foreground }]}>
+                {activityProgressModel.activityDone.activitySave.activity.name}
+              </Text>
+              <View style={styles.weekView}>
+                <Text style={[styles.weekInfo, { color: theme.foreground }]}>
+                  {Math.round((activity.activityDone.achievement / activity.activityDone.activitySave.objective) * 100)}%
+                </Text>
+                <Text style={[styles.weekInfo, { color: theme.foreground }]}>
+                  {activity.weekObjective}/{activityProgressModel.activityDone.activitySave.frequency}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.rightContainer}>
+              <MaterialCommunityIcons name={activityProgressModel.activityDone.activitySave.activity.icon} size={24} color={theme.foreground} />
+            </View>
           </View>
-        </View>
-        <View style={styles.rightContainer}>
-          <MaterialCommunityIcons name={activityProgressModel.activityDone.activitySave.activity.icon} size={24} color={theme.foreground} />
-        </View>
-      </View>
-    </ReanimatedSwipeable>
-    </TouchableOpacity>
-    <ActivityDoneEditModal
-      isVisible={isEditModalVisible}
-      activity={activityProgressModel.activityDone}
-      onClose={() => setEditModalVisible(false)}
-      onSave={handleSave}
-    />
-  </View>
+        </ReanimatedSwipeable>
+      </TouchableOpacity>
+      <ActivityDoneEditModal
+        isVisible={isEditModalVisible}
+        activity={activityProgressModel.activityDone}
+        onClose={() => setEditModalVisible(false)}
+        onSave={handleSave}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    overflow: 'hidden', // Ensure children do not overflow the container
+    overflow: 'hidden',
     padding: 10,
   },
   swipeableContainer: {
     borderRadius: 10,
     marginTop: 10,
-
   },
   leftContainer: {
     flex: 1,

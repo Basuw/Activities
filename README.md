@@ -10,7 +10,7 @@ With Activities you can track your progress among all ativities you perform on a
 - React Native 📱
 - PostgreSQl 💾
 - Docker 📦
-- 
+  
 ## Installation
 
 >**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.

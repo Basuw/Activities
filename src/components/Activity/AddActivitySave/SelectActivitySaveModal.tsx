@@ -72,7 +72,6 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
   };
 
   const closeActivityDetails = () => {
-    onClose();
     setSelectedActivity(null);
   };
 
@@ -84,43 +83,45 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback>
-            <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
-              <ScrollView contentContainerStyle={[styles.modalContent, { backgroundColor: theme.background }]}>
-                {Object.keys(activities).map((category) => (
-                  <View key={category} style={{ backgroundColor: theme.background, marginTop: 12 }}>
-                    <TouchableOpacity onPress={() => toggleCategory(category)} style={styles.categoryHeader}>
-                      <MaterialCommunityIcons
-                        name={expandedCategories[category] ? 'chevron-down' : 'chevron-right'}
-                        size={24}
-                        color={theme.foreground}
-                      />
-                      <Text style={{ color: theme.foreground, fontSize: 24, marginLeft: 10 }}>{category}</Text>
-                    </TouchableOpacity>
-                    {expandedCategories[category] && activities[category].map((activity) => (
-                      <TouchableOpacity key={activity.name} onPress={() => handleActivityPress(activity)} style={styles.activityItem}>
-                        <MaterialCommunityIcons name={activity.icon} size={24} color={theme.foreground} />
-                        <Text style={{ color: theme.foreground, marginLeft: 10, fontSize: 18 }}>{activity.name}</Text>
+    <>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+        onRequestClose={onClose}
+      >
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
+                <ScrollView contentContainerStyle={[styles.modalContent, { backgroundColor: theme.background }]}>
+                  {Object.keys(activities).map((category) => (
+                    <View key={category} style={{ backgroundColor: theme.background, marginTop: 12 }}>
+                      <TouchableOpacity onPress={() => toggleCategory(category)} style={styles.categoryHeader}>
+                        <MaterialCommunityIcons
+                          name={expandedCategories[category] ? 'chevron-down' : 'chevron-right'}
+                          size={24}
+                          color={theme.foreground}
+                        />
+                        <Text style={{ color: theme.foreground, fontSize: 24, marginLeft: 10 }}>{category}</Text>
                       </TouchableOpacity>
-                    ))}
-                  </View>
-                ))}
-              </ScrollView>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <MaterialCommunityIcons name="close" size={24} color={theme.foreground} />
-              </TouchableOpacity>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+                      {expandedCategories[category] && activities[category].map((activity) => (
+                        <TouchableOpacity key={activity.name} onPress={() => handleActivityPress(activity)} style={styles.activityItem}>
+                          <MaterialCommunityIcons name={activity.icon} size={24} color={theme.foreground} />
+                          <Text style={{ color: theme.foreground, marginLeft: 10, fontSize: 18 }}>{activity.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  ))}
+                </ScrollView>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <MaterialCommunityIcons name="close" size={24} color={theme.foreground} />
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
       {selectedActivity && (
         <ActivitySaveDetailsModal
           isVisible={!!selectedActivity}
@@ -130,7 +131,7 @@ const SelectActivitySaveModal: React.FC<AddActivitySaveProps> = ({ isVisible, on
           refreshActivities={fetchActivitiesDone}
         />
       )}
-    </Modal>
+    </>
   );
 };
 

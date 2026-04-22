@@ -10,10 +10,11 @@ import ActivityProgressModel from '../../models/Activities/ActivityProgressModel
 import SelectActivitySaveModal from '../../components/Activity/AddActivitySave/SelectActivitySaveModal.tsx';
 import UserModel from '../../models/UserModel.ts';
 import { callApiService } from '../../services/activities/callAPIService.ts';
+import dayjs from 'dayjs';
 
 const Activities = (props: { user: UserModel }) => {
   const theme = useTheme();
-  const [selectedDay, setSelectedDay] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDay, setSelectedDay] = useState(dayjs().format('YYYY-MM-DD'));
   const [activities, setActivities] = useState<ActivityProgressModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -22,7 +23,7 @@ const Activities = (props: { user: UserModel }) => {
 
   const handleDaySelect = (day: string) => {
     if (day === selectedDay) {
-      return; // Do nothing if the selected day is the same as the current day
+      return;
     }
 
     if (logTimeoutRef.current) {
@@ -31,16 +32,16 @@ const Activities = (props: { user: UserModel }) => {
 
     logTimeoutRef.current = setTimeout(() => {
       setSelectedDay(day);
-      console.log(`Selected Day: ${selectedDay}`);
-      fetchActivities();
-    }, 150); // Adjust the delay as needed
+      fetchActivities(day);
+    }, 150);
   };
 
-  const fetchActivities = async () => {
+  const fetchActivities = async (day?: string) => {
+    const dayToFetch = day ?? selectedDay;
     setLoading(true);
-    setActivities([]); // Clear activities before setting the new day
+    setActivities([]);
     try {
-      const fetchedActivities = await callApiService.fetchActivitiesDone(selectedDay, props.user.id);
+      const fetchedActivities = await callApiService.fetchActivitiesDone(dayToFetch, props.user.id);
       setActivities(fetchedActivities);
     } catch (error) {
       console.log('An error occurred while fetching data', error);

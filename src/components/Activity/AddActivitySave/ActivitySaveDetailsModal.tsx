@@ -21,53 +21,53 @@ interface ActivitySaveDetailsModalProps {
 
 const ActivitySaveDetailsModal: React.FC<ActivitySaveDetailsModalProps> = ({ isVisible, activity, onClose, user, refreshActivities}) => {
   const theme = useTheme();
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [frequency, setFrequency] = useState<number>(1);
   const [objective, setObjective] = useState<number>(0);
 
   const handleDaySelect = (day: string) => {
-    setSelectedDay(day === selectedDay ? null : day);
+    setSelectedDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
   };
 
-  const handleSave = () => {
-    postActivitySave();
+  const handleSave = async () => {
+    await postActivitySave();
     refreshActivities();
     onClose();
   };
 
-  const postActivitySave = () => {
-    const activitySave = new PostActivitySaveDTO(
-      frequency,
-      objective,
-      'notes',
-      new PostActivityDTO(activity.id),
-      new PostUserDTO(user.id),
-      dayEnumFromString(),
-    );
-
-    const url = `${DEV_API_URL}/save`;
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(activitySave),
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        } else {
-          throw new Error('Failed to fetch data');
+  const postActivitySave = async () => {
+    const days = selectedDays.length > 0 ? selectedDays : [null as any];
+    await Promise.all(days.map(day => {
+      const activitySave = new PostActivitySaveDTO(
+        frequency,
+        objective,
+        'notes',
+        new PostActivityDTO(activity.id),
+        new PostUserDTO(user.id),
+        dayEnumFromString(day),
+      );
+      const url = `${DEV_API_URL}/save`;
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(activitySave),
+      }).then((response) => {
+        if (response.status !== 200) {
+          throw new Error('Failed to save activity');
         }
-      })
-      .catch((error) => {
+      }).catch((error) => {
         console.error('Error while posting new activitySave:', error);
       });
+    }));
   };
 
-  const dayEnumFromString = (): DayEnum | undefined => {
-    switch (selectedDay) {
+  const dayEnumFromString = (day: string | null): DayEnum | undefined => {
+    switch (day) {
       case 'Mo':
         return DayEnum.MONDAY;
       case 'Tu':
@@ -83,7 +83,7 @@ const ActivitySaveDetailsModal: React.FC<ActivitySaveDetailsModalProps> = ({ isV
       case 'Su':
         return DayEnum.SUNDAY;
       default:
-        return;
+        return undefined;
     }
   }
 
@@ -108,10 +108,10 @@ const ActivitySaveDetailsModal: React.FC<ActivitySaveDetailsModalProps> = ({ isV
                       onPress={() => handleDaySelect(day)}
                       style={[
                         styles.dayButton,
-                        selectedDay === day && { backgroundColor: theme.purple },
+                        selectedDays.includes(day) && { backgroundColor: theme.purple },
                       ]}
                     >
-                      <Text style={{ color: selectedDay === day ? theme.foreground : theme.purple }}>{day}</Text>
+                      <Text style={{ color: selectedDays.includes(day) ? theme.foreground : theme.purple }}>{day}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>

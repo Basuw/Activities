@@ -34,7 +34,7 @@ const DayMenu: React.FC<DayMenuProps> = ({ selectedDay, onDaySelect }) => {
       days.push({
         date: day.getDate(),
         weekday: day.toLocaleDateString('en-US', options),
-        fullDate: day.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        fullDate: dayjs(day).format('YYYY-MM-DD'),
       });
     }
 
@@ -104,7 +104,7 @@ const DayMenu: React.FC<DayMenuProps> = ({ selectedDay, onDaySelect }) => {
                 styles.dayText,
                 { color: theme.foreground },
                 day.fullDate === selectedDay && { color: theme.purple, fontSize: 28 },
-                day.fullDate === new Date().toISOString().split('T')[0] && { color: theme.orange },
+                day.fullDate === dayjs().format('YYYY-MM-DD') && { color: theme.orange },
               ]}>
               {day.date}
             </Text>

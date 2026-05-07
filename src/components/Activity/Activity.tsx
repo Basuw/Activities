@@ -1,14 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import ActivityProgressModel from '../../models/Activities/ActivityProgressModel.ts';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from 'styled-components';
 // @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTheme } from 'styled-components';
 import ReanimatedSwipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO.tsx';
 import LinearGradient from 'react-native-linear-gradient';
-import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal.tsx';
-import { callApiService } from '../../services/activities/callAPIService.ts';
+import ActivityProgressModel from '../../models/Activities/ActivityProgressModel';
+import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO';
+import { activityApiService } from '../../services/ActivityApiService';
+import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -16,146 +16,147 @@ interface ActivityProps {
 }
 
 const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
-  const [activityProgressModel, setActivityProgressModel] = useState(activity);
-
   const theme = useTheme();
-  const swipeableRef = useRef<SwipeableMethods | null>(null);
+  const [model, setModel] = useState(activity);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const swipeableRef = useRef<SwipeableMethods | null>(null);
 
-  const handleEditPress = () => {
-    setEditModalVisible(true);
-  };
+  const progress = model.activityDone.activitySave.objective > 0
+    ? Math.round((model.activityDone.achievement / model.activityDone.activitySave.objective) * 100)
+    : 0;
+  const isComplete = progress >= 100;
 
-  const handleSave = (updatedActivity: ActivityDoneDTO) => {
-    activityProgressModel.activityDone = updatedActivity;
-    createOrUpdateActivityDone(activityProgressModel.activityDone);
-  };
-
-  const handleSwipeRight = () => {
-    console.log('Swiped right');
-    if (activityProgressModel.activityDone.achievement !== activityProgressModel.activityDone.activitySave.objective) {
-      activityProgressModel.activityDone.achievement = activityProgressModel.activityDone.activitySave.objective;
-      createOrUpdateActivityDone(activityProgressModel.activityDone);
+  const createOrUpdate = async (updated: ActivityDoneDTO) => {
+    updated.doneOn = selectedDay;
+    try {
+      const result = updated.id <= 0
+        ? await activityApiService.postActivityDone(updated)
+        : await activityApiService.patchActivityDone(updated);
+      setModel(result);
+    } catch (e) {
+      console.error('Error updating activity:', e);
     }
   };
 
-  const handleSwipeLeft = () => {
-    console.log('Swiped left');
-    // Ajoutez ici la logique pour le swipe à droite si nécessaire
+  const handleSave = (updated: ActivityDoneDTO) => {
+    setModel(prev => ({ ...prev, activityDone: updated }));
+    createOrUpdate(updated);
   };
 
-  const createOrUpdateActivityDone = async (updatedActivity: ActivityDoneDTO) => {
-    activityProgressModel.activityDone.doneOn = selectedDay;
-    if (activityProgressModel.activityDone.id <= 0) {
-      try {
-        const result = await callApiService.postActivityDone(updatedActivity);
-        setActivityProgressModel(result);
-      } catch (error) {
-        console.error('Error posting activity:', error);
-      }
+  const handleSwipeComplete = () => {
+    if (!isComplete) {
+      const updated = { ...model.activityDone, achievement: model.activityDone.activitySave.objective };
+      createOrUpdate(updated);
+    }
+    setTimeout(() => swipeableRef.current?.close(), 600);
+  };
+
+  const handleSwipeableOpen = (direction: 'left' | 'right') => {
+    if (direction === 'left') {
+      handleSwipeComplete();
     } else {
-      try {
-        const result = await callApiService.patchActivityDone(updatedActivity);
-        setActivityProgressModel(result);
-      } catch (error) {
-        console.error('Error posting activity:', error);
-      }
+      setTimeout(() => swipeableRef.current?.close(), 2000);
     }
   };
 
   const renderLeftActions = () => (
     <LinearGradient
-      colors={['#56ab2f', '#a8e063']}
+      colors={['#10B981', '#34D399']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.leftAction}
     >
-      <TouchableOpacity style={styles.actionButton} onPress={() => createOrUpdateActivityDone(activityProgressModel.activityDone)}>
-        <MaterialCommunityIcons name="check" size={24} color="white" />
-      </TouchableOpacity>
+      <MaterialCommunityIcons name="check-bold" size={28} color="white" />
+      <Text style={styles.actionLabel}>Done!</Text>
     </LinearGradient>
   );
 
   const renderRightActions = () => (
-    <View style={styles.rightAction}>
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: 'orange' }]}
-          onPress={() => console.log('Extra Right Button 1 Pressed')}
-        >
-          <MaterialCommunityIcons name="alert" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: 'yellow' }]}
-          onPress={() => console.log('Extra Right Button 2 Pressed')}
-        >
-          <MaterialCommunityIcons name="bell" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: 'red' }]}
-          onPress={() => console.log('Right Button Pressed')}
-        >
-          <MaterialCommunityIcons name="close" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.rightAction, { backgroundColor: theme.surface }]}>
+      <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#F59E0B' }]}>
+        <MaterialCommunityIcons name="bell-outline" size={22} color="white" />
+      </TouchableOpacity>
+      <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF4444' }]}>
+        <MaterialCommunityIcons name="trash-can-outline" size={22} color="white" />
+      </TouchableOpacity>
     </View>
   );
 
-  const handleSwipeableOpen = (direction: 'left' | 'right') => {
-    console.log(`Swipeable opened in direction: ${direction}`);
-    if (direction === 'left') {
-      handleSwipeLeft();
-    } else if (direction === 'right') {
-      handleSwipeRight();
-    }
-
-    setTimeout(() => {
-      if (swipeableRef.current) {
-        swipeableRef.current.close();
-      }
-    }, 3000);
-  };
-
   return (
-    <View>
-      <TouchableOpacity onPress={handleEditPress}>
-        <ReanimatedSwipeable
-          ref={swipeableRef}
-          containerStyle={styles.swipeableContainer}
-          renderLeftActions={renderLeftActions}
-          renderRightActions={renderRightActions}
-          rightThreshold={50}
-          leftThreshold={100}
-          onSwipeableWillOpen={(direction: 'left' | 'right') => handleSwipeableOpen(direction)}
+    <View style={styles.wrapper}>
+      <ReanimatedSwipeable
+        ref={swipeableRef}
+        containerStyle={styles.swipeable}
+        renderLeftActions={renderLeftActions}
+        renderRightActions={renderRightActions}
+        leftThreshold={80}
+        rightThreshold={50}
+        onSwipeableWillOpen={handleSwipeableOpen}
+      >
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => setEditModalVisible(true)}
+          style={[styles.card, { backgroundColor: theme.surface }]}
         >
-          <View style={[styles.container, { backgroundColor: theme.subViewColor }]}>
-            <View style={styles.leftContainer}>
-              <Text style={[styles.largeText, { color: theme.foreground }]}>
-                {activityProgressModel.activityDone.achievement}/{activityProgressModel.activityDone.activitySave.objective}
-              </Text>
+          {/* Progress bar */}
+          <View style={[styles.progressBar, { backgroundColor: theme.card }]}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${Math.min(progress, 100)}%` as any,
+                  backgroundColor: isComplete ? theme.green : theme.purple,
+                },
+              ]}
+            />
+          </View>
+
+          <View style={styles.row}>
+            {/* Icon */}
+            <View style={[styles.iconWrap, { backgroundColor: `${isComplete ? theme.green : theme.purple}22` }]}>
+              <MaterialCommunityIcons
+                name={model.activityDone.activitySave.activity.icon}
+                size={24}
+                color={isComplete ? theme.green : theme.purple}
+              />
             </View>
-            <View style={styles.centerContainer}>
-              <Text style={[styles.activityName, { color: theme.foreground }]}>
-                {activityProgressModel.activityDone.activitySave.activity.name}
+
+            {/* Info */}
+            <View style={styles.info}>
+              <Text style={[styles.name, { color: theme.foreground }]} numberOfLines={1}>
+                {model.activityDone.activitySave.activity.name}
               </Text>
-              <View style={styles.weekView}>
-                <Text style={[styles.weekInfo, { color: theme.foreground }]}>
-                  {Math.round((activity.activityDone.achievement / activity.activityDone.activitySave.objective) * 100)}%
+              <View style={styles.statsRow}>
+                <Text style={[styles.stat, { color: theme.secondary }]}>
+                  Week: {model.weekObjective}/{model.activityDone.activitySave.frequency}
                 </Text>
-                <Text style={[styles.weekInfo, { color: theme.foreground }]}>
-                  {activity.weekObjective}/{activityProgressModel.activityDone.activitySave.frequency}
-                </Text>
+                <View style={[styles.badge, { backgroundColor: isComplete ? `${theme.green}22` : `${theme.purple}22` }]}>
+                  <Text style={[styles.badgeText, { color: isComplete ? theme.green : theme.purple }]}>
+                    {progress}%
+                  </Text>
+                </View>
               </View>
             </View>
-            <View style={styles.rightContainer}>
-              <MaterialCommunityIcons name={activityProgressModel.activityDone.activitySave.activity.icon} size={24} color={theme.foreground} />
+
+            {/* Score */}
+            <View style={styles.score}>
+              <Text style={[styles.achievement, { color: theme.foreground }]}>
+                {model.activityDone.achievement}
+              </Text>
+              <Text style={[styles.objective, { color: theme.secondary }]}>
+                /{model.activityDone.activitySave.objective}
+              </Text>
+              <Text style={[styles.unity, { color: theme.secondary }]}>
+                {model.activityDone.activitySave.activity.unity}
+              </Text>
             </View>
           </View>
-        </ReanimatedSwipeable>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </ReanimatedSwipeable>
+
       <ActivityDoneEditModal
         isVisible={isEditModalVisible}
-        activity={activityProgressModel.activityDone}
+        activity={model.activityDone}
         onClose={() => setEditModalVisible(false)}
         onSave={handleSave}
       />
@@ -164,62 +165,103 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
+  wrapper: {
+    marginTop: 8,
+  },
+  swipeable: {
+    borderRadius: 16,
+  },
+  card: {
+    borderRadius: 16,
     overflow: 'hidden',
-    padding: 10,
   },
-  swipeableContainer: {
-    borderRadius: 10,
-    marginTop: 10,
+  progressBar: {
+    height: 3,
+    width: '100%',
   },
-  leftContainer: {
-    flex: 1,
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    gap: 12,
+  },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     justifyContent: 'center',
-  },
-  centerContainer: {
-    flex: 2,
     alignItems: 'center',
   },
-  rightContainer: {
+  info: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
+    gap: 4,
   },
-  largeText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  activityName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  weekInfo: {
+  name: {
     fontSize: 16,
+    fontWeight: '600',
   },
-  weekView: {
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '70%',
-    paddingTop: 10,
-  },
-  buttonGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  actionButton: {
-    justifyContent: 'center',
     alignItems: 'center',
-    width: 70,
+    gap: 8,
+  },
+  stat: {
+    fontSize: 12,
+  },
+  badge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  score: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 1,
+  },
+  achievement: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  objective: {
+    fontSize: 14,
+  },
+  unity: {
+    fontSize: 11,
+    marginLeft: 2,
   },
   leftAction: {
-    backgroundColor: 'green',
-    flexDirection: 'row',
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 24,
+    gap: 8,
+    borderRadius: 16,
+  },
+  actionLabel: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
   },
   rightAction: {
-    backgroundColor: 'red',
     flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  actionBtn: {
+    width: 64,
+    height: '100%' as any,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

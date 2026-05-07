@@ -1,232 +1,309 @@
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useTheme } from 'styled-components';
-import { DEV_API_URL } from '@env';
+// @ts-ignore
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Slider from '@react-native-community/slider';
 import ActivityDTO from '../../../dto/activities/ActivityDTO';
-import UserModel from '../../../models/UserModel.ts';
-import PostActivitySaveDTO from '../../../dto/activities/postActivitySave/PostActivitySaveDTO.tsx';
-import PostActivityDTO from '../../../dto/activities/postActivitySave/PostActivityDTO.tsx';
-import PostUserDTO from '../../../dto/activities/postActivitySave/PostUserDTO.tsx';
-import DayEnum from '../../../models/Activities/DayEnum.ts';
+import UserModel from '../../../models/UserModel';
+import DayEnum from '../../../models/Activities/DayEnum';
+import { activityApiService } from '../../../services/ActivityApiService';
 
-interface ActivitySaveDetailsModalProps {
+const DAYS: { short: string; full: DayEnum }[] = [
+  { short: 'Mo', full: DayEnum.MONDAY },
+  { short: 'Tu', full: DayEnum.TUESDAY },
+  { short: 'We', full: DayEnum.WEDNESDAY },
+  { short: 'Th', full: DayEnum.THURSDAY },
+  { short: 'Fr', full: DayEnum.FRIDAY },
+  { short: 'Sa', full: DayEnum.SATURDAY },
+  { short: 'Su', full: DayEnum.SUNDAY },
+];
+
+interface Props {
   isVisible: boolean;
   activity: ActivityDTO;
-  onClose: () => void;
   user: UserModel;
-  refreshActivities: () => void; // Add this prop
+  onClose: () => void;
+  refreshActivities: () => void;
 }
 
-const ActivitySaveDetailsModal: React.FC<ActivitySaveDetailsModalProps> = ({ isVisible, activity, onClose, user, refreshActivities}) => {
+const ActivitySaveDetailsModal: React.FC<Props> = ({
+  isVisible,
+  activity,
+  user,
+  onClose,
+  refreshActivities,
+}) => {
   const theme = useTheme();
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [frequency, setFrequency] = useState<number>(1);
-  const [objective, setObjective] = useState<number>(0);
+  const [selectedDays, setSelectedDays] = useState<DayEnum[]>([]);
+  const [frequency, setFrequency] = useState(3);
+  const [objective, setObjective] = useState(10);
+  const [saving, setSaving] = useState(false);
 
-  const handleDaySelect = (day: string) => {
+  const toggleDay = (day: DayEnum) => {
     setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day],
     );
   };
 
   const handleSave = async () => {
-    await postActivitySave();
-    refreshActivities();
-    onClose();
-  };
-
-  const postActivitySave = async () => {
-    const days = selectedDays.length > 0 ? selectedDays : [null as any];
-    await Promise.all(days.map(day => {
-      const activitySave = new PostActivitySaveDTO(
-        frequency,
-        objective,
-        'notes',
-        new PostActivityDTO(activity.id),
-        new PostUserDTO(user.id),
-        dayEnumFromString(day),
+    setSaving(true);
+    try {
+      const days = selectedDays.length > 0 ? selectedDays : [undefined as any];
+      await Promise.all(
+        days.map((day: DayEnum | undefined) =>
+          activityApiService.createActivitySave({
+            frequency,
+            objective,
+            notes: '',
+            activity: { id: activity.id },
+            user: { id: user.id },
+            day,
+          }),
+        ),
       );
-      const url = `${DEV_API_URL}/save`;
-      return fetch(url, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(activitySave),
-      }).then((response) => {
-        if (response.status !== 200) {
-          throw new Error('Failed to save activity');
-        }
-      }).catch((error) => {
-        console.error('Error while posting new activitySave:', error);
-      });
-    }));
-  };
-
-  const dayEnumFromString = (day: string | null): DayEnum | undefined => {
-    switch (day) {
-      case 'Mo':
-        return DayEnum.MONDAY;
-      case 'Tu':
-        return DayEnum.TUESDAY;
-      case 'We':
-        return DayEnum.WEDNESDAY;
-      case 'Th':
-        return DayEnum.THURSDAY;
-      case 'Fr':
-        return DayEnum.FRIDAY;
-      case 'Sa':
-        return DayEnum.SATURDAY;
-      case 'Su':
-        return DayEnum.SUNDAY;
-      default:
-        return undefined;
+      refreshActivities();
+      onClose();
+    } catch (e) {
+      console.error('Failed to save activity', e);
+    } finally {
+      setSaving(false);
     }
-  }
+  };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback>
-            <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
-              <Text style={{ color: theme.foreground, fontSize: 18, marginBottom: 10 }}>{activity.name}</Text>
-              <View style={styles.contentContainer}>
-                <View style={styles.leftContainer}>
-                  <Text style={{ color: theme.foreground, marginBottom: 10 }}>Days:</Text>
-                  {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => handleDaySelect(day)}
+    <Modal animationType="slide" transparent visible={isVisible} onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.sheet, { backgroundColor: theme.background }]}>
+          <View style={[styles.handle, { backgroundColor: theme.secondary }]} />
+
+          {/* Activity header */}
+          <View style={styles.activityHeader}>
+            <View style={[styles.iconWrapper, { backgroundColor: `${theme.purple}22` }]}>
+              <MaterialCommunityIcons name={activity.icon} size={32} color={theme.purple} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.activityName, { color: theme.foreground }]}>{activity.name}</Text>
+              <Text style={[styles.activityCategory, { color: theme.secondary }]}>{activity.category}</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialCommunityIcons name="close" size={22} color={theme.secondary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Schedule */}
+            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>SCHEDULE</Text>
+            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.fieldLabel, { color: theme.foreground }]}>Days of the week</Text>
+              <Text style={[styles.fieldHint, { color: theme.secondary }]}>
+                Leave empty to track on any day
+              </Text>
+              <View style={styles.daysRow}>
+                {DAYS.map(({ short, full }) => (
+                  <TouchableOpacity
+                    key={short}
+                    onPress={() => toggleDay(full)}
+                    style={[
+                      styles.dayBtn,
+                      { borderColor: theme.purple },
+                      selectedDays.includes(full) && { backgroundColor: theme.purple },
+                    ]}
+                  >
+                    <Text
                       style={[
-                        styles.dayButton,
-                        selectedDays.includes(day) && { backgroundColor: theme.purple },
+                        styles.dayText,
+                        { color: selectedDays.includes(full) ? 'white' : theme.secondary },
                       ]}
                     >
-                      <Text style={{ color: selectedDays.includes(day) ? theme.foreground : theme.purple }}>{day}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <View style={styles.rightContainer}>
-                  <Text style={{ color: theme.foreground, marginBottom: 20 }}>Frequency:</Text>
-                  <Text style={{ color: theme.foreground, marginBottom: 20 }}>{frequency} times per week</Text>
-                  <View style={styles.frequencyButtons}>
-                    <TouchableOpacity onPress={() => setFrequency((prev) => Math.max(1, prev - 1))} style={styles.frequencyButton}>
-                      <Text style={{ color: theme.purple }}>-</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setFrequency((prev) => prev + 1)} style={styles.frequencyButton}>
-                      <Text style={{ color: theme.purple }}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={{ color: theme.foreground, marginBottom: 20 }}>Objective:</Text>
-                  <TextInput
-                    style={[styles.objectiveInput, { color: theme.foreground, borderColor: theme.foreground }]}
-                    keyboardType="numeric"
-                    value={objective.toString()}
-                    onChangeText={(text) => setObjective(Number(text))}
-                  />
-                  <Text style={{ color: theme.foreground, marginBottom: 20 }}>{activity.unity}</Text>
-                  <Slider
-                    style={{ width: 150, height: 40 }}
-                    minimumValue={0}
-                    maximumValue={100}
-                    step={1}
-                    value={objective}
-                    onValueChange={(value) => setObjective(value)}
-                    minimumTrackTintColor={theme.purple}
-                    maximumTrackTintColor={theme.foreground}
-                  />
-                  <TouchableOpacity onPress={handleSave} style={[styles.saveButton, { backgroundColor: 'limegreen', marginTop: 20 }]}>
-                    <Text style={{ color: theme.foreground }}>Save Activity</Text>
+                      {short}
+                    </Text>
                   </TouchableOpacity>
-                </View>
+                ))}
               </View>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <MaterialCommunityIcons name="close" size={24} color={theme.foreground} />
-              </TouchableOpacity>
             </View>
-          </TouchableWithoutFeedback>
+
+            {/* Frequency */}
+            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>FREQUENCY</Text>
+            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+              <View style={styles.counterRow}>
+                <TouchableOpacity
+                  onPress={() => setFrequency(f => Math.max(1, f - 1))}
+                  style={[styles.counterBtn, { backgroundColor: theme.card }]}
+                >
+                  <MaterialCommunityIcons name="minus" size={20} color={theme.purple} />
+                </TouchableOpacity>
+                <View style={styles.counterDisplay}>
+                  <Text style={[styles.counterNumber, { color: theme.foreground }]}>{frequency}</Text>
+                  <Text style={[styles.counterUnit, { color: theme.secondary }]}>times / week</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setFrequency(f => f + 1)}
+                  style={[styles.counterBtn, { backgroundColor: theme.card }]}
+                >
+                  <MaterialCommunityIcons name="plus" size={20} color={theme.purple} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Objective */}
+            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>OBJECTIVE</Text>
+            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+              <View style={styles.objectiveDisplay}>
+                <Text style={[styles.objectiveValue, { color: theme.foreground }]}>{objective}</Text>
+                <Text style={[styles.objectiveUnit, { color: theme.secondary }]}>{activity.unity}</Text>
+              </View>
+              <Slider
+                style={styles.slider}
+                minimumValue={1}
+                maximumValue={200}
+                step={1}
+                value={objective}
+                onValueChange={v => setObjective(Math.round(v))}
+                minimumTrackTintColor={theme.purple}
+                maximumTrackTintColor={theme.border}
+                thumbTintColor={theme.purple}
+              />
+              <TextInput
+                style={[styles.objectiveInput, { color: theme.foreground, borderColor: theme.border }]}
+                keyboardType="numeric"
+                value={String(objective)}
+                onChangeText={v => {
+                  const n = parseInt(v, 10);
+                  if (!isNaN(n)) setObjective(n);
+                }}
+              />
+            </View>
+
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={saving}
+              style={[styles.saveBtn, { backgroundColor: theme.purple }, saving && { opacity: 0.6 }]}
+            >
+              <Text style={styles.saveBtnText}>{saving ? 'Saving…' : 'Save Activity'}</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 40 }} />
+          </ScrollView>
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     </Modal>
   );
 };
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
+  overlay: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingBottom: 34,
+    maxHeight: SCREEN_HEIGHT * 0.9,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 16,
+  },
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalContainer: {
-    width: 300,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    alignItems: 'center',
+  activityName: { fontSize: 20, fontWeight: '700' },
+  activityCategory: { fontSize: 14, marginTop: 2 },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    marginLeft: 4,
   },
-  contentContainer: {
+  card: {
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 20,
+  },
+  fieldLabel: { fontSize: 15, fontWeight: '600', marginBottom: 4 },
+  fieldHint: { fontSize: 12, marginBottom: 14 },
+  daysRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
   },
-  leftContainer: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  rightContainer: {
-    flex: 2,
-    alignItems: 'center',
-  },
-  dayButton: {
-    margin: 5,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: 'lightgray',
-    width: 50,
-    alignItems: 'center',
-  },
-  frequencyButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '50%',
-    marginBottom: 10,
-  },
-  frequencyButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: 'lightgray',
-    alignItems: 'center',
+  dayBtn: {
     width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
   },
+  dayText: { fontSize: 12, fontWeight: '600' },
+  counterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  counterBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  counterDisplay: { alignItems: 'center' },
+  counterNumber: { fontSize: 34, fontWeight: '700' },
+  counterUnit: { fontSize: 13 },
+  objectiveDisplay: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+    marginBottom: 4,
+  },
+  objectiveValue: { fontSize: 34, fontWeight: '700' },
+  objectiveUnit: { fontSize: 16 },
+  slider: { width: '100%', height: 40 },
   objectiveInput: {
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 5,
-    marginBottom: 10,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
     textAlign: 'center',
-    width: 100,
+    marginTop: 8,
+    fontSize: 16,
   },
-  saveButton: {
-    padding: 10,
-    borderRadius: 5,
+  saveBtn: {
+    height: 56,
+    borderRadius: 18,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 4,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
+  saveBtnText: { color: 'white', fontSize: 17, fontWeight: '700' },
 });
 
 export default ActivitySaveDetailsModal;

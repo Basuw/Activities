@@ -1,47 +1,64 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'styled-components';
+// @ts-ignore
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Activity from './Activity';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel';
-import { useTheme } from 'styled-components';
 
 interface ActivitySectionProps {
-  title: string;
   activities: ActivityProgressModel[];
   selectedDay: Date;
 }
 
-const ActivitySection: React.FC<ActivitySectionProps> = ({ title, activities, selectedDay}) => {
+const ActivitySection: React.FC<ActivitySectionProps> = ({ activities, selectedDay }) => {
   const theme = useTheme();
 
-  const renderItem = ({ item }: { item: ActivityProgressModel }) => (
-    <Activity
-      activity={item}
-      selectedDay={selectedDay}
-    />
-  );
+  if (activities.length === 0) {
+    return (
+      <View style={[styles.emptyContainer, { backgroundColor: theme.surface }]}>
+        <MaterialCommunityIcons name="calendar-blank" size={48} color={theme.secondary} />
+        <Text style={[styles.emptyTitle, { color: theme.foreground }]}>No activities yet</Text>
+        <Text style={[styles.emptySubtitle, { color: theme.secondary }]}>
+          Tap + to add an activity for this day
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.viewColor }]}>
-      <Text style={[styles.title, { color: theme.foreground }]}>{title}</Text>
-      <FlatList
-        data={activities}
-        renderItem={renderItem}
-        keyExtractor={(item) => `${item.activityDone.id}-${item.activityDone.doneOn}`}
-      />
-    </View>
+    <FlatList
+      data={activities}
+      keyExtractor={item => `${item.activityDone.id}-${item.activityDone.doneOn}`}
+      renderItem={({ item }) => <Activity activity={item} selectedDay={selectedDay} />}
+      contentContainerStyle={styles.list}
+      showsVerticalScrollIndicator={false}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    marginTop: 10,
-    borderRadius: 25,
+  list: {
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+    paddingTop: 8,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 24,
+    paddingVertical: 48,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  emptySubtitle: {
+    fontSize: 14,
   },
 });
 

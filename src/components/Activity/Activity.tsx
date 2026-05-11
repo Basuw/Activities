@@ -9,7 +9,6 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   runOnJS,
-  interpolateColor,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
@@ -18,32 +17,43 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO';
 import StatusEnum from '../../models/Activities/StatusEnum';
 import { activityApiService } from '../../services/ActivityApiService';
 import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal';
+import DelayActionSheet, { DelayOption } from './DelayActionSheet';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
   selectedDay: Date;
 }
 
-const SWIPE_X_THRESHOLD = 90;  // horizontal trigger distance
-const SWIPE_Y_THRESHOLD = 60;  // downward trigger distance
+const SWIPE_RIGHT_THRESHOLD = 90;
+const SWIPE_LEFT_THRESHOLD  = 90;
 
 const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const theme = useTheme();
   const [model, setModel] = useState(activity);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [isDelaySheetVisible, setDelaySheetVisible] = useState(false);
 
   const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
 
   const progress = model.activityDone.activitySave.objective > 0
     ? Math.round((model.activityDone.achievement / model.activityDone.activitySave.objective) * 100)
     : 0;
-  const isComplete = progress >= 100;
+  const isComplete  = progress >= 100 || model.activityDone.status === StatusEnum.COMPLETED;
+  const isCancelled = model.activityDone.status === StatusEnum.CANCELLED;
+
+  // Couleur dominante de la carte
+  const cardColor = isComplete ? theme.green : isCancelled ? theme.orange : theme.purple;
 
   // ─── API ───────────────────────────────────────────────────────────────────
 
   const createOrUpdate = async (updated: ActivityDoneDTO) => {
     updated.doneOn = selectedDay;
+    if (updated.achievement == updated.activitySave.objective) {
+      updated.status = StatusEnum.COMPLETED;
+    } else if (updated.achievement != 0) {
+      updated.status = StatusEnum.IN_PROGRESS;
+    }
+
     try {
       const result = updated.id <= 0
         ? await activityApiService.postActivityDone(updated)
@@ -77,113 +87,57 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
     }
   };
 
-  const handleDelay = () => {
-    console.log('delay');
+  const handleDelayOption = (option: DelayOption) => {
+    setDelaySheetVisible(false);
+    // TODO: implement backend scheduling
+    console.log('delay:', option);
   };
 
-  const openEditModal = () => setEditModalVisible(true);
+  const openEditModal  = () => setEditModalVisible(true);
+  const openDelaySheet = () => setDelaySheetVisible(true);
 
-  // ─── Gestures ──────────────────────────────────────────────────────────────
+  // ─── Gesture ───────────────────────────────────────────────────────────────
 
-  /**
-   * Horizontal pan:
-   *   right (+X) → validate (green)
-   *   left  (-X) → cancel  (red)
-   * failOffsetY prevents activation when swiping vertically.
-   */
-  const panX = Gesture.Pan()
+  const gesture = Gesture.Pan()
     .activeOffsetX([-10, 10])
     .failOffsetY([-20, 20])
     .onUpdate(e => {
       translateX.value = e.translationX;
-      translateY.value = 0;
     })
     .onEnd(e => {
-      if (e.translationX > SWIPE_X_THRESHOLD) {
+      if (e.translationX > SWIPE_RIGHT_THRESHOLD) {
         runOnJS(handleValidate)();
-      } else if (e.translationX < -SWIPE_X_THRESHOLD) {
+      } else if (e.translationX < -SWIPE_LEFT_THRESHOLD) {
         runOnJS(handleCancel)();
       }
       translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
     });
 
-  /**
-   * Vertical pan (downward only):
-   *   down (+Y) → delay (orange)
-   * failOffsetX prevents activation when swiping horizontally.
-   */
-  const panY = Gesture.Pan()
-    .activeOffsetY([-9999, 20])
-    .failOffsetX([-20, 20])
-    .onUpdate(e => {
-      if (e.translationY > 0) {
-        translateY.value = e.translationY;
-      }
-      translateX.value = 0;
-    })
-    .onEnd(e => {
-      if (e.translationY > SWIPE_Y_THRESHOLD) {
-        runOnJS(handleDelay)();
-      }
-      translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
-    });
-
-  // Race: first gesture to activate wins, cancels the other
-  const gesture = Gesture.Race(panX, panY);
-
   // ─── Animated styles ───────────────────────────────────────────────────────
 
-  /** Card slides with finger */
   const cardStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-    ],
+    transform: [{ translateX: translateX.value }],
   }));
 
-  /**
-   * Background behind card:
-   *   translateX > 0  → green  (validate)
-   *   translateX < 0  → red    (cancel)
-   *   translateY > 0  → orange (delay)
-   */
   const bgStyle = useAnimatedStyle(() => {
-    const ax = Math.abs(translateX.value);
-    const ay = translateY.value > 0 ? translateY.value : 0;
-
-    if (ax < 5 && ay < 5) return { backgroundColor: 'transparent' };
-
-    if (ax >= ay) {
-      // Horizontal dominant
-      if (translateX.value > 0) {
-        // green
-        const opacity = interpolate(translateX.value, [0, 40], [0, 1], Extrapolation.CLAMP);
-        return { backgroundColor: `rgba(16,185,129,${opacity})` };
-      } else {
-        // red
-        const opacity = interpolate(-translateX.value, [0, 40], [0, 1], Extrapolation.CLAMP);
-        return { backgroundColor: `rgba(239,68,68,${opacity})` };
-      }
-    } else {
-      // Vertical dominant (down)
-      const opacity = interpolate(translateY.value, [0, 40], [0, 1], Extrapolation.CLAMP);
-      return { backgroundColor: `rgba(245,158,11,${opacity})` };
+    const x = translateX.value;
+    if (x > 5) {
+      const op = interpolate(x, [5, 50], [0, 1], Extrapolation.CLAMP);
+      return { backgroundColor: `rgba(16,185,129,${op})` };
     }
+    if (x < -5) {
+      const op = interpolate(-x, [5, 50], [0, 1], Extrapolation.CLAMP);
+      return { backgroundColor: `rgba(239,68,68,${op})` };
+    }
+    return { backgroundColor: 'transparent' };
   });
 
-  /** Green icon/label — left side, visible when swiping right */
   const greenIconStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [10, 50], [0, 1], Extrapolation.CLAMP),
+    opacity: interpolate(translateX.value, [10, 55], [0, 1], Extrapolation.CLAMP),
   }));
 
-  /** Red icon/label — right side, visible when swiping left */
   const redIconStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(-translateX.value, [10, 50], [0, 1], Extrapolation.CLAMP),
-  }));
-
-  /** Orange icon/label — center, visible when swiping down */
-  const orangeIconStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translateY.value, [10, 50], [0, 1], Extrapolation.CLAMP),
+    opacity: interpolate(-translateX.value, [10, 55], [0, 1], Extrapolation.CLAMP),
   }));
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -191,35 +145,29 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   return (
     <View style={styles.wrapper}>
       <GestureDetector gesture={gesture}>
-        {/* Outer container: clips card to rounded corners, holds the bg */}
         <View style={styles.container}>
 
-          {/* ── Colored background (absoluteFill, behind card) ── */}
+          {/* Colored background behind card */}
           <Animated.View style={[StyleSheet.absoluteFill, styles.bg, bgStyle]}>
-            {/* Green: check — left side */}
+            {/* Green — swipe right */}
             <Animated.View style={[styles.bgLeft, greenIconStyle]}>
               <MaterialCommunityIcons name="check-bold" size={26} color="white" />
               <Text style={styles.bgLabel}>Done!</Text>
             </Animated.View>
-
-            {/* Red: cancel — right side */}
+            {/* Red — swipe left */}
             <Animated.View style={[styles.bgRight, redIconStyle]}>
               <Text style={styles.bgLabel}>Annuler</Text>
               <MaterialCommunityIcons name="close-circle-outline" size={26} color="white" />
             </Animated.View>
-
-            {/* Orange: delay — center */}
-            <Animated.View style={[styles.bgCenter, orangeIconStyle]}>
-              <Text style={styles.bgEmoji}>⏰</Text>
-              <Text style={styles.bgLabel}>Delay</Text>
-            </Animated.View>
           </Animated.View>
 
-          {/* ── Card (slides on top of background) ── */}
+          {/* Card */}
           <Animated.View style={cardStyle}>
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={openEditModal}
+              onLongPress={openDelaySheet}
+              delayLongPress={400}
               style={[styles.card, { backgroundColor: theme.surface }]}
             >
               {/* Progress bar */}
@@ -228,8 +176,8 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
                   style={[
                     styles.progressFill,
                     {
-                      width: `${Math.min(progress, 100)}%` as any,
-                      backgroundColor: isComplete ? theme.green : theme.purple,
+                      width: isCancelled ? '100%' : `${Math.min(progress, 100)}%` as any,
+                      backgroundColor: cardColor,
                     },
                   ]}
                 />
@@ -237,11 +185,11 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
 
               <View style={styles.row}>
                 {/* Icon */}
-                <View style={[styles.iconWrap, { backgroundColor: `${isComplete ? theme.green : theme.purple}22` }]}>
+                <View style={[styles.iconWrap, { backgroundColor: `${cardColor}22` }]}>
                   <MaterialCommunityIcons
                     name={model.activityDone.activitySave.activity.icon}
                     size={24}
-                    color={isComplete ? theme.green : theme.purple}
+                    color={cardColor}
                   />
                 </View>
 
@@ -254,9 +202,9 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
                     <Text style={[styles.stat, { color: theme.secondary }]}>
                       Week: {model.weekObjective}/{model.activityDone.activitySave.frequency}
                     </Text>
-                    <View style={[styles.badge, { backgroundColor: isComplete ? `${theme.green}22` : `${theme.purple}22` }]}>
-                      <Text style={[styles.badgeText, { color: isComplete ? theme.green : theme.purple }]}>
-                        {progress}%
+                    <View style={[styles.badge, { backgroundColor: `${cardColor}22` }]}>
+                      <Text style={[styles.badgeText, { color: cardColor }]}>
+                        {isCancelled ? '✕' : `${progress}%`}
                       </Text>
                     </View>
                   </View>
@@ -286,6 +234,13 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
         activity={model.activityDone}
         onClose={() => setEditModalVisible(false)}
         onSave={handleSave}
+      />
+
+      <DelayActionSheet
+        isVisible={isDelaySheetVisible}
+        activityName={model.activityDone.activitySave.activity.name}
+        onSelect={handleDelayOption}
+        onClose={() => setDelaySheetVisible(false)}
       />
     </View>
   );
@@ -319,20 +274,10 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     gap: 10,
   },
-  bgCenter: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
   bgLabel: {
     color: 'white',
     fontSize: 15,
     fontWeight: '700',
-  },
-  bgEmoji: {
-    fontSize: 22,
   },
   card: {
     borderRadius: 16,

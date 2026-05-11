@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Modal,
@@ -29,6 +29,15 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
   const [achievement, setAchievement] = useState(activity.achievement);
   const [notes, setNotes] = useState(activity.notes ?? '');
   const [mark, setMark] = useState(activity.mark ?? 0);
+
+  // Resync internal state each time the modal opens so it reflects the latest activity values
+  useEffect(() => {
+    if (isVisible) {
+      setAchievement(activity.achievement);
+      setNotes(activity.notes ?? '');
+      setMark(activity.mark ?? 0);
+    }
+  }, [isVisible, activity]);
 
   const handleSave = () => {
     onSave({ ...activity, achievement, notes, mark });

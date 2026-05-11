@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'styled-components';
 // @ts-ignore
@@ -32,6 +32,12 @@ const Activities = ({ user }: { user: UserModel }) => {
       setLoading(false);
     }
   }, [selectedDay, user.id]);
+
+  // Load today's activities on mount
+  useEffect(() => {
+    fetchActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDaySelect = (day: string) => {
     if (day === selectedDay) return;
@@ -84,6 +90,7 @@ const Activities = ({ user }: { user: UserModel }) => {
       <ActivitySection
         activities={activities}
         selectedDay={selectedDate.toDate()}
+        loading={loading}
       />
 
       {/* FAB */}

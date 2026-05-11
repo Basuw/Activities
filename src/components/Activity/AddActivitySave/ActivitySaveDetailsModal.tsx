@@ -166,7 +166,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
               <Slider
                 style={styles.slider}
                 minimumValue={1}
-                maximumValue={200}
+                maximumValue={50}
                 step={1}
                 value={objective}
                 onValueChange={v => setObjective(Math.round(v))}

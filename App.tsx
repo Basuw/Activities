@@ -7,7 +7,7 @@ import { ThemeProvider } from 'styled-components';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Activities from './src/screens/Activity/Activities';
-import Profil from './src/screens/Profil';
+import Profile from './src/screens/Profile.tsx';
 import Login from './src/screens/Login';
 import Register from './src/screens/Register';
 import { darkTheme, lightTheme } from './src/theme/theme';
@@ -70,8 +70,8 @@ const App = () => {
                 children={() => <Activities user={user} />}
               />
               <Tab.Screen
-                name="Profil"
-                children={() => <Profil user={user} onLogout={handleLogout} />}
+                name="Profile"
+                children={() => <Profile user={user} onLogout={handleLogout} />}
               />
             </Tab.Navigator>
           </NavigationContainer>

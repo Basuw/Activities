@@ -10,7 +10,7 @@ interface Props {
   onLogout: () => void;
 }
 
-const Profil: React.FC<Props> = ({ user, onLogout }) => {
+const Profile: React.FC<Props> = ({ user, onLogout }) => {
   const theme = useTheme();
 
   return (
@@ -145,4 +145,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Profil;
+export default Profile;

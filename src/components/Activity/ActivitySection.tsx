@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'styled-components';
 // @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -9,10 +9,20 @@ import ActivityProgressModel from '../../models/Activities/ActivityProgressModel
 interface ActivitySectionProps {
   activities: ActivityProgressModel[];
   selectedDay: Date;
+  loading?: boolean;
 }
 
-const ActivitySection: React.FC<ActivitySectionProps> = ({ activities, selectedDay }) => {
+const ActivitySection: React.FC<ActivitySectionProps> = ({ activities, selectedDay, loading }) => {
   const theme = useTheme();
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={theme.purple} />
+        <Text style={[styles.loadingText, { color: theme.secondary }]}>Loading…</Text>
+      </View>
+    );
+  }
 
   if (activities.length === 0) {
     return (
@@ -38,6 +48,16 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activities, selectedD
 };
 
 const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    marginTop: 4,
+  },
   list: {
     paddingHorizontal: 16,
     paddingBottom: 100,

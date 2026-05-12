@@ -68,7 +68,14 @@ class ActivityApiService {
   async createActivitySave(activitySave: ActivitySaveModel): Promise<void> {
     await this.request(`${this.baseUrl}/save`, {
       method: 'POST',
-      body: JSON.stringify(activitySave),
+      body: JSON.stringify({
+        frequency: activitySave.frequency,
+        objective: activitySave.objective,
+        notes: activitySave.notes ?? '',
+        activity: { id: activitySave.activity.id },
+        user: { id: activitySave.user.id },
+        ...(activitySave.day ? { day: activitySave.day } : {}),
+      }),
     });
   }
 

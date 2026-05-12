@@ -89,8 +89,8 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
 
           {/* Activity header */}
           <View style={styles.activityHeader}>
-            <View style={[styles.iconWrapper, { backgroundColor: `${theme.purple}22` }]}>
-              <MaterialCommunityIcons name={activity.icon} size={32} color={theme.purple} />
+            <View style={[styles.iconWrapper, { backgroundColor: `${theme.main}22` }]}>
+              <MaterialCommunityIcons name={activity.icon} size={32} color={theme.main} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.activityName, { color: theme.foreground }]}>{activity.name}</Text>
@@ -116,8 +116,8 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
                     onPress={() => toggleDay(full)}
                     style={[
                       styles.dayBtn,
-                      { borderColor: theme.purple },
-                      selectedDays.includes(full) && { backgroundColor: theme.purple },
+                      { borderColor: theme.main },
+                      selectedDays.includes(full) && { backgroundColor: theme.main },
                     ]}
                   >
                     <Text
@@ -141,7 +141,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
                   onPress={() => setFrequency(f => Math.max(1, f - 1))}
                   style={[styles.counterBtn, { backgroundColor: theme.card }]}
                 >
-                  <MaterialCommunityIcons name="minus" size={20} color={theme.purple} />
+                  <MaterialCommunityIcons name="minus" size={20} color={theme.main} />
                 </TouchableOpacity>
                 <View style={styles.counterDisplay}>
                   <Text style={[styles.counterNumber, { color: theme.foreground }]}>{frequency}</Text>
@@ -151,7 +151,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
                   onPress={() => setFrequency(f => f + 1)}
                   style={[styles.counterBtn, { backgroundColor: theme.card }]}
                 >
-                  <MaterialCommunityIcons name="plus" size={20} color={theme.purple} />
+                  <MaterialCommunityIcons name="plus" size={20} color={theme.main} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -170,9 +170,9 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
                 step={1}
                 value={objective}
                 onValueChange={v => setObjective(Math.round(v))}
-                minimumTrackTintColor={theme.purple}
+                minimumTrackTintColor={theme.main}
                 maximumTrackTintColor={theme.border}
-                thumbTintColor={theme.purple}
+                thumbTintColor={theme.main}
               />
               <TextInput
                 style={[styles.objectiveInput, { color: theme.foreground, borderColor: theme.border }]}
@@ -188,7 +188,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
             <TouchableOpacity
               onPress={handleSave}
               disabled={saving}
-              style={[styles.saveBtn, { backgroundColor: theme.purple }, saving && { opacity: 0.6 }]}
+              style={[styles.saveBtn, { backgroundColor: theme.main }, saving && { opacity: 0.6 }]}
             >
               <Text style={styles.saveBtnText}>{saving ? 'Saving…' : 'Save Activity'}</Text>
             </TouchableOpacity>

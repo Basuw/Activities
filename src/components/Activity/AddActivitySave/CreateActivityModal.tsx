@@ -92,8 +92,8 @@ const CreateActivityModal: React.FC<Props> = ({ isVisible, user, onClose, onCrea
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Icon preview */}
             <View style={styles.iconPreviewRow}>
-              <View style={[styles.iconPreviewCircle, { backgroundColor: `${theme.purple}22` }]}>
-                <MaterialCommunityIcons name={icon} size={44} color={theme.purple} />
+              <View style={[styles.iconPreviewCircle, { backgroundColor: `${theme.main}22` }]}>
+                <MaterialCommunityIcons name={icon} size={44} color={theme.main} />
               </View>
               <Text style={[styles.iconPreviewHint, { color: theme.secondary }]}>
                 Choose an icon below
@@ -111,7 +111,7 @@ const CreateActivityModal: React.FC<Props> = ({ isVisible, user, onClose, onCrea
                     style={[
                       styles.iconOption,
                       { backgroundColor: theme.card },
-                      icon === ic && { backgroundColor: theme.purple },
+                      icon === ic && { backgroundColor: theme.main },
                     ]}
                   >
                     <MaterialCommunityIcons
@@ -171,8 +171,8 @@ const CreateActivityModal: React.FC<Props> = ({ isVisible, user, onClose, onCrea
                     onPress={() => { setCategory(cat); setError(''); }}
                     style={[
                       styles.chip,
-                      { borderColor: theme.purple },
-                      category === cat && { backgroundColor: theme.purple },
+                      { borderColor: theme.main },
+                      category === cat && { backgroundColor: theme.main },
                     ]}
                   >
                     <Text

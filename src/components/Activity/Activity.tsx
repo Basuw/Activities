@@ -42,7 +42,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const isCancelled = model.activityDone.status === StatusEnum.CANCELLED;
 
   // Couleur dominante de la carte
-  const cardColor = isComplete ? theme.green : isCancelled ? theme.orange : theme.purple;
+  const cardColor = isComplete ? theme.green : isCancelled ? theme.orange : theme.main;
 
   // ─── API ───────────────────────────────────────────────────────────────────
 

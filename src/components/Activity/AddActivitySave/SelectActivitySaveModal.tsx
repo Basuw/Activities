@@ -122,7 +122,7 @@ const SelectActivitySaveModal: React.FC<Props> = ({ isVisible, user, onClose, fe
             </View>
 
             <TouchableOpacity
-              style={[styles.createBtn, { backgroundColor: theme.purple }]}
+              style={[styles.createBtn, { backgroundColor: theme.main }]}
               onPress={() => setShowCreate(true)}
             >
               <MaterialCommunityIcons name="plus-circle-outline" size={20} color="white" />
@@ -132,7 +132,7 @@ const SelectActivitySaveModal: React.FC<Props> = ({ isVisible, user, onClose, fe
             <View style={styles.listArea}>
               {loading ? (
                 <View style={styles.centered}>
-                  <ActivityIndicator size="large" color={theme.purple} />
+                  <ActivityIndicator size="large" color={theme.main} />
                   <Text style={[styles.loadingText, { color: theme.secondary }]}>Loading activities…</Text>
                 </View>
               ) : error ? (
@@ -144,8 +144,8 @@ const SelectActivitySaveModal: React.FC<Props> = ({ isVisible, user, onClose, fe
                     style={[styles.retryBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
                     onPress={loadActivities}
                   >
-                    <MaterialCommunityIcons name="refresh" size={16} color={theme.purple} />
-                    <Text style={[styles.retryText, { color: theme.purple }]}>Retry</Text>
+                    <MaterialCommunityIcons name="refresh" size={16} color={theme.main} />
+                    <Text style={[styles.retryText, { color: theme.main }]}>Retry</Text>
                   </TouchableOpacity>
                 </View>
               ) : Object.keys(filtered).length === 0 ? (
@@ -173,8 +173,8 @@ const SelectActivitySaveModal: React.FC<Props> = ({ isVisible, user, onClose, fe
                             ]}
                             onPress={() => setSelectedActivity(activity)}
                           >
-                            <View style={[styles.iconWrap, { backgroundColor: `${theme.purple}22` }]}>
-                              <MaterialCommunityIcons name={activity.icon} size={20} color={theme.purple} />
+                            <View style={[styles.iconWrap, { backgroundColor: `${theme.main}22` }]}>
+                              <MaterialCommunityIcons name={activity.icon} size={20} color={theme.main} />
                             </View>
                             <Text style={[styles.activityName, { color: theme.foreground }]}>
                               {activity.name}

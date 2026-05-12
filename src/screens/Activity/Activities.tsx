@@ -63,7 +63,7 @@ const Activities = ({ user }: { user: UserModel }) => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.dayLabel, { color: theme.purple }]}>{dayLabel}</Text>
+          <Text style={[styles.dayLabel, { color: theme.main }]}>{dayLabel}</Text>
           <Text style={[styles.dateLabel, { color: theme.foreground }]}>
             {selectedDate.format('MMMM D, YYYY')}
           </Text>
@@ -78,8 +78,8 @@ const Activities = ({ user }: { user: UserModel }) => {
             }
           }}
         >
-          <MaterialCommunityIcons name="calendar-today" size={18} color={theme.purple} />
-          <Text style={[styles.todayBtnText, { color: theme.purple }]}>Today</Text>
+          <MaterialCommunityIcons name="calendar-today" size={18} color={theme.main} />
+          <Text style={[styles.todayBtnText, { color: theme.main }]}>Today</Text>
         </TouchableOpacity>
       </View>
 
@@ -95,7 +95,7 @@ const Activities = ({ user }: { user: UserModel }) => {
 
       {/* FAB */}
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: theme.purple }]}
+        style={[styles.fab, { backgroundColor: theme.main }]}
         onPress={() => setAddModalVisible(true)}
         activeOpacity={0.85}
       >

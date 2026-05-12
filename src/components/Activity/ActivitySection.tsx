@@ -18,7 +18,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activities, selectedD
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.purple} />
+        <ActivityIndicator size="large" color={theme.main} />
         <Text style={[styles.loadingText, { color: theme.secondary }]}>Loading…</Text>
       </View>
     );

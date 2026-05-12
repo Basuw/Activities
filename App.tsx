@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import {Platform, useColorScheme } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeBottomTabNavigator } from '@bottom-tabs/react-navigation';
 import { ThemeProvider } from 'styled-components';
-// @ts-ignore
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Activities from './src/screens/Activity/Activities';
-import Profile from './src/screens/Profile.tsx';
+import Profile from './src/screens/Profile';
 import Login from './src/screens/Login';
+import Training from './src/screens/Training';
 import Register from './src/screens/Register';
 import { darkTheme, lightTheme } from './src/theme/theme';
 import { authService } from './src/services/AuthService';
 import UserModel from './src/models/UserModel';
 
-const Tab = createBottomTabNavigator();
+const Tab = createNativeBottomTabNavigator();
 
 const App = () => {
   const scheme = useColorScheme();
@@ -31,48 +30,63 @@ const App = () => {
     });
   }, []);
 
-  const handleLoginSuccess = (loggedInUser: UserModel) => {
-    setUser(loggedInUser);
-  };
+  const handleLoginSuccess = (loggedInUser: UserModel) => setUser(loggedInUser);
 
   const handleLogout = async () => {
     await authService.logout();
     setUser(null);
   };
 
-  // Don't render anything while restoring session to avoid flicker
   if (bootstrapping) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{flex: 1}}>
       <ThemeProvider theme={theme}>
         {user ? (
           <NavigationContainer>
             <Tab.Navigator
-              screenOptions={({ route }) => ({
-                tabBarIcon: ({ focused, color, size }) => {
-                  const iconName = route.name === 'Activities'
-                    ? 'tasks'
-                    : focused ? 'user-alt' : 'user';
-                  return <FontAwesome5 name={iconName} size={size} color={color} />;
-                },
-                tabBarActiveTintColor: theme.purple,
-                tabBarInactiveTintColor: theme.secondary,
-                tabBarStyle: {
-                  backgroundColor: theme.surface,
-                  borderTopColor: theme.border,
-                },
-                headerShown: false,
-              })}
-            >
+              tabBarActiveTintColor={theme.main}
+              tabBarInactiveTintColor={theme.secondary}>
               <Tab.Screen
                 name="Activities"
-                children={() => <Activities user={user} />}
-              />
+                options={{
+                  tabBarLabel: 'Activities',
+
+                  tabBarIcon : () =>  Platform.select({
+                    ios: {
+                      type: 'sfSymbol',
+                      name: 'checklist',
+                    },
+                    android: {
+                      type: 'materialSymbol',
+                      name: 'home',
+                    },
+                  }),
+                }}>
+                {() => <Activities user={user} />}
+              </Tab.Screen>
+
+              <Tab.Screen
+                name="Training"
+                options={{
+                  tabBarLabel: 'Training',
+                  tabBarIcon: ({focused}) => ({
+                    sfSymbol: focused ? 'workout.fill' : '',
+                  }),
+                }}>
+                {() => <Training user={user} onLogout={handleLogout} />}
+              </Tab.Screen>
+
               <Tab.Screen
                 name="Profile"
-                children={() => <Profile user={user} onLogout={handleLogout} />}
-              />
+                options={{
+                  tabBarLabel: 'Profile',
+                  tabBarIcon: ({focused}) => ({
+                    sfSymbol: focused ? 'person.fill' : 'person',
+                  }),
+                }}>
+                {() => <Profile user={user} onLogout={handleLogout} />}
+              </Tab.Screen>
             </Tab.Navigator>
           </NavigationContainer>
         ) : authScreen === 'register' ? (

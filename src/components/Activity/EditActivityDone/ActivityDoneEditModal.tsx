@@ -57,11 +57,11 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={[styles.iconWrap, { backgroundColor: `${theme.purple}22` }]}>
+            <View style={[styles.iconWrap, { backgroundColor: `${theme.main}22` }]}>
               <MaterialCommunityIcons
                 name={activity.activitySave.activity.icon}
                 size={28}
-                color={theme.purple}
+                color={theme.main}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -100,7 +100,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                     styles.progressBarFill,
                     {
                       width: `${progress}%` as any,
-                      backgroundColor: isComplete ? theme.green : theme.purple,
+                      backgroundColor: isComplete ? theme.green : theme.main,
                     },
                   ]}
                 />
@@ -113,9 +113,9 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                 step={1}
                 value={achievement}
                 onValueChange={v => setAchievement(Math.round(v))}
-                minimumTrackTintColor={isComplete ? theme.green : theme.purple}
+                minimumTrackTintColor={isComplete ? theme.green : theme.main}
                 maximumTrackTintColor={theme.card}
-                thumbTintColor={isComplete ? theme.green : theme.purple}
+                thumbTintColor={isComplete ? theme.green : theme.main}
               />
 
               {/* Manual input */}
@@ -124,7 +124,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                   onPress={() => setAchievement(v => Math.max(0, v - 1))}
                   style={[styles.stepBtn, { backgroundColor: theme.card }]}
                 >
-                  <MaterialCommunityIcons name="minus" size={18} color={theme.purple} />
+                  <MaterialCommunityIcons name="minus" size={18} color={theme.main} />
                 </TouchableOpacity>
                 <TextInput
                   style={[styles.achievementInput, { color: theme.foreground, borderColor: theme.border }]}
@@ -139,7 +139,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                   onPress={() => setAchievement(v => v + 1)}
                   style={[styles.stepBtn, { backgroundColor: theme.card }]}
                 >
-                  <MaterialCommunityIcons name="plus" size={18} color={theme.purple} />
+                  <MaterialCommunityIcons name="plus" size={18} color={theme.main} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -185,7 +185,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSave}
-                style={[styles.saveBtn, { backgroundColor: theme.purple }]}
+                style={[styles.saveBtn, { backgroundColor: theme.main }]}
               >
                 <Text style={styles.saveBtnText}>Save</Text>
               </TouchableOpacity>

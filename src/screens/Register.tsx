@@ -77,7 +77,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
 
           {/* Branding */}
           <View style={styles.brandSection}>
-            <View style={[styles.logoCircle, { backgroundColor: theme.purple }]}>
+            <View style={[styles.logoCircle, { backgroundColor: theme.main }]}>
               <MaterialCommunityIcons name="lightning-bolt" size={48} color="white" />
             </View>
             <Text style={[styles.appName, { color: theme.foreground }]}>Activities</Text>
@@ -188,7 +188,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
 
             {/* Register button */}
             <TouchableOpacity
-              style={[styles.registerBtn, { backgroundColor: theme.purple }, loading && { opacity: 0.7 }]}
+              style={[styles.registerBtn, { backgroundColor: theme.main }, loading && { opacity: 0.7 }]}
               onPress={handleRegister}
               disabled={loading}
               activeOpacity={0.85}
@@ -212,7 +212,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
             <View style={styles.loginLink}>
               <Text style={[styles.loginLinkText, { color: theme.secondary }]}>Already have an account? </Text>
               <TouchableOpacity onPress={onNavigateToLogin}>
-                <Text style={[styles.loginLinkAction, { color: theme.purple }]}>Sign in</Text>
+                <Text style={[styles.loginLinkAction, { color: theme.main }]}>Sign in</Text>
               </TouchableOpacity>
             </View>
           </View>

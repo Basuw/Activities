@@ -100,20 +100,20 @@ const DayMenu: React.FC<DayMenuProps> = ({ selectedDay, onDaySelect }) => {
               style={styles.dayContainer}
               onPress={() => handleDayPress(day)}
             >
-              <Text style={[styles.weekday, { color: isSelected ? theme.purple : theme.secondary }]}>
+              <Text style={[styles.weekday, { color: isSelected ? theme.main : theme.secondary }]}>
                 {day.weekday}
               </Text>
               <View
                 style={[
                   styles.dateCircle,
-                  isSelected && { backgroundColor: theme.purple },
-                  isToday && !isSelected && { borderWidth: 2, borderColor: theme.purple },
+                  isSelected && { backgroundColor: theme.main },
+                  isToday && !isSelected && { borderWidth: 2, borderColor: theme.main },
                 ]}
               >
                 <Text
                   style={[
                     styles.date,
-                    { color: isSelected ? 'white' : isToday ? theme.purple : theme.foreground },
+                    { color: isSelected ? 'white' : isToday ? theme.main : theme.foreground },
                     isSelected && styles.dateSelected,
                   ]}
                 >

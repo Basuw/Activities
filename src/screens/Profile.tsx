@@ -17,7 +17,7 @@ const Profile: React.FC<Props> = ({ user, onLogout }) => {
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       {/* Avatar */}
       <View style={styles.avatarSection}>
-        <View style={[styles.avatarCircle, { backgroundColor: theme.purple }]}>
+        <View style={[styles.avatarCircle, { backgroundColor: theme.main }]}>
           <Text style={styles.avatarInitial}>
             {user.username?.charAt(0).toUpperCase() ?? '?'}
           </Text>

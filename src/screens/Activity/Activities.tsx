@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'styled-components';
-// @ts-ignore
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../../components/Icon';
 import dayjs from 'dayjs';
 import ActivitySection from '../../components/Activity/ActivitySection';
 import DayMenu from '../../components/Activity/DaysMenu';
@@ -78,7 +77,7 @@ const Activities = ({ user }: { user: UserModel }) => {
             }
           }}
         >
-          <MaterialCommunityIcons name="calendar-today" size={18} color={theme.main} />
+          <Icon sfSymbol="calendar" androidIcon="calendar-today" size={18} color={theme.main} />
           <Text style={[styles.todayBtnText, { color: theme.main }]}>Today</Text>
         </TouchableOpacity>
       </View>
@@ -99,7 +98,7 @@ const Activities = ({ user }: { user: UserModel }) => {
         onPress={() => setAddModalVisible(true)}
         activeOpacity={0.85}
       >
-        <MaterialCommunityIcons name="plus" size={28} color="white" />
+        <Icon sfSymbol="plus" androidIcon="plus" size={28} color="white" />
       </TouchableOpacity>
 
       <SelectActivitySaveModal

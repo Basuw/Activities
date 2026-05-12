@@ -14,6 +14,7 @@ import { useTheme } from 'styled-components';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 // @ts-ignore
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Icon from '../../Icon';
 import Slider from '@react-native-community/slider';
 import ActivityDoneDTO from '../../../dto/activities/ActivityDoneDTO';
 
@@ -73,7 +74,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialCommunityIcons name="close" size={22} color={theme.secondary} />
+              <Icon sfSymbol="xmark" androidIcon="close" size={22} color={theme.secondary} />
             </TouchableOpacity>
           </View>
 
@@ -90,7 +91,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                   /{objective} {activity.activitySave.activity.unity}
                 </Text>
                 {isComplete && (
-                  <MaterialCommunityIcons name="check-circle" size={24} color={theme.green} style={{ marginLeft: 8 }} />
+                  <Icon sfSymbol="checkmark.circle.fill" androidIcon="check-circle" size={24} color={theme.green} />
                 )}
               </View>
 
@@ -124,7 +125,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                   onPress={() => setAchievement(v => Math.max(0, v - 1))}
                   style={[styles.stepBtn, { backgroundColor: theme.card }]}
                 >
-                  <MaterialCommunityIcons name="minus" size={18} color={theme.main} />
+                  <Icon sfSymbol="minus" androidIcon="minus" size={18} color={theme.main} />
                 </TouchableOpacity>
                 <TextInput
                   style={[styles.achievementInput, { color: theme.foreground, borderColor: theme.border }]}
@@ -139,7 +140,7 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                   onPress={() => setAchievement(v => v + 1)}
                   style={[styles.stepBtn, { backgroundColor: theme.card }]}
                 >
-                  <MaterialCommunityIcons name="plus" size={18} color={theme.main} />
+                  <Icon sfSymbol="plus" androidIcon="plus" size={18} color={theme.main} />
                 </TouchableOpacity>
               </View>
             </View>

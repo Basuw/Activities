@@ -19,6 +19,7 @@ import StatusEnum from '../../models/Activities/StatusEnum';
 import { activityApiService } from '../../services/ActivityApiService';
 import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal';
 import DelayActionSheet, { DelayOption } from './DelayActionSheet';
+import ActivitySaveDTO from '../../dto/activities/ActivitySaveDTO.tsx';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -68,6 +69,10 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const handleSave = (updated: ActivityDoneDTO) => {
     setModel(prev => ({ ...prev, activityDone: updated }));
     createOrUpdate(updated);
+  };
+
+  const handleEditActivitySave= (updated: ActivitySaveDTO)=>{
+    console.log("test")
   };
 
   const handleValidate = () => {
@@ -235,6 +240,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
         activity={model.activityDone}
         onClose={() => setEditModalVisible(false)}
         onSave={handleSave}
+        onEditModel={handleEditActivitySave}
       />
 
       <DelayActionSheet

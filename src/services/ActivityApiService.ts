@@ -7,6 +7,7 @@ import { formatActivities } from './activities/formatActivities';
 import StatusEnum from '../models/Activities/StatusEnum';
 import DayEnum from '../models/Activities/DayEnum';
 import dayjs from 'dayjs';
+import ActivitySaveModel from '../models/Activities/ActivitySaveModel.ts';
 
 export interface CreateActivityPayload {
   name: string;
@@ -64,10 +65,10 @@ class ActivityApiService {
     });
   }
 
-  async createActivitySave(payload: CreateActivitySavePayload): Promise<void> {
+  async createActivitySave(activitySave: ActivitySaveModel): Promise<void> {
     await this.request(`${this.baseUrl}/save`, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(activitySave),
     });
   }
 

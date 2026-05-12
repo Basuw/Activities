@@ -18,6 +18,7 @@ import UserModel from '../../../models/UserModel';
 import { activityApiService } from '../../../services/ActivityApiService';
 import ActivitySaveDetailsModal from './ActivitySaveDetailsModal';
 import CreateActivityModal from './CreateActivityModal';
+import ActivitySaveModel from '../../../models/Activities/ActivitySaveModel.ts';
 
 interface Props {
   isVisible: boolean;
@@ -200,8 +201,7 @@ const SelectActivitySaveModal: React.FC<Props> = ({ isVisible, user, onClose, fe
       {selectedActivity && (
         <ActivitySaveDetailsModal
           isVisible
-          activity={selectedActivity}
-          user={user}
+          activitySave={new ActivitySaveModel(0,3, 10, new Date(), selectedActivity, "", "", user)}
           onClose={() => setSelectedActivity(null)}
           refreshActivities={handleSaved}
         />

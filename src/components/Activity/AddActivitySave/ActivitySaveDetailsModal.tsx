@@ -13,10 +13,9 @@ import { useTheme } from 'styled-components';
 // @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Slider from '@react-native-community/slider';
-import ActivityDTO from '../../../dto/activities/ActivityDTO';
-import UserModel from '../../../models/UserModel';
 import DayEnum from '../../../models/Activities/DayEnum';
 import { activityApiService } from '../../../services/ActivityApiService';
+import ActivitySaveModel from "../../../models/Activities/ActivitySaveModel.ts";
 
 const DAYS: { short: string; full: DayEnum }[] = [
   { short: 'Mo', full: DayEnum.MONDAY },
@@ -30,23 +29,19 @@ const DAYS: { short: string; full: DayEnum }[] = [
 
 interface Props {
   isVisible: boolean;
-  activity: ActivityDTO;
-  user: UserModel;
+  activitySave: ActivitySaveModel;
   onClose: () => void;
   refreshActivities: () => void;
 }
 
 const ActivitySaveDetailsModal: React.FC<Props> = ({
   isVisible,
-  activity,
-  user,
+  activitySave,
   onClose,
   refreshActivities,
 }) => {
   const theme = useTheme();
   const [selectedDays, setSelectedDays] = useState<DayEnum[]>([]);
-  const [frequency, setFrequency] = useState(3);
-  const [objective, setObjective] = useState(10);
   const [saving, setSaving] = useState(false);
 
   const toggleDay = (day: DayEnum) => {
@@ -60,15 +55,12 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
     try {
       const days = selectedDays.length > 0 ? selectedDays : [undefined as any];
       await Promise.all(
-        days.map((day: DayEnum | undefined) =>
-          activityApiService.createActivitySave({
-            frequency,
-            objective,
-            notes: '',
-            activity: { id: activity.id },
-            user: { id: user.id },
-            day,
-          }),
+        days.map((day: DayEnum | string) =>{
+            activitySave.day=day;
+            activityApiService.createActivitySave({
+              activitySave
+            })
+        }
         ),
       );
       refreshActivities();
@@ -81,51 +73,85 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
   };
 
   return (
-    <Modal animationType="slide" transparent visible={isVisible} onRequestClose={onClose}>
+    <Modal
+      animationType="slide"
+      transparent
+      visible={isVisible}
+      onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, { backgroundColor: theme.background }]}>
-          <View style={[styles.handle, { backgroundColor: theme.secondary }]} />
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        <View style={[styles.sheet, {backgroundColor: theme.background}]}>
+          <View style={[styles.handle, {backgroundColor: theme.secondary}]} />
 
           {/* Activity header */}
           <View style={styles.activityHeader}>
-            <View style={[styles.iconWrapper, { backgroundColor: `${theme.main}22` }]}>
-              <MaterialCommunityIcons name={activity.icon} size={32} color={theme.main} />
+            <View
+              style={[
+                styles.iconWrapper,
+                {backgroundColor: `${theme.main}22`},
+              ]}>
+              <MaterialCommunityIcons
+                name={activitySave.activity.icon}
+                size={32}
+                color={theme.main}
+              />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.activityName, { color: theme.foreground }]}>{activity.name}</Text>
-              <Text style={[styles.activityCategory, { color: theme.secondary }]}>{activity.category}</Text>
+            <View style={{flex: 1}}>
+              <Text style={[styles.activityName, {color: theme.foreground}]}>
+                {activitySave.activity.name}
+              </Text>
+              <Text style={[styles.activityCategory, {color: theme.secondary}]}>
+                {activitySave.activity.category}
+              </Text>
             </View>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialCommunityIcons name="close" size={22} color={theme.secondary} />
+            <TouchableOpacity
+              onPress={onClose}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+              <MaterialCommunityIcons
+                name="close"
+                size={22}
+                color={theme.secondary}
+              />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Schedule */}
-            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>SCHEDULE</Text>
-            <View style={[styles.card, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.fieldLabel, { color: theme.foreground }]}>Days of the week</Text>
-              <Text style={[styles.fieldHint, { color: theme.secondary }]}>
+            <Text style={[styles.sectionLabel, {color: theme.secondary}]}>
+              SCHEDULE
+            </Text>
+            <View style={[styles.card, {backgroundColor: theme.surface}]}>
+              <Text style={[styles.fieldLabel, {color: theme.foreground}]}>
+                Days of the week
+              </Text>
+              <Text style={[styles.fieldHint, {color: theme.secondary}]}>
                 Leave empty to track on any day
               </Text>
               <View style={styles.daysRow}>
-                {DAYS.map(({ short, full }) => (
+                {DAYS.map(({short, full}) => (
                   <TouchableOpacity
                     key={short}
                     onPress={() => toggleDay(full)}
                     style={[
                       styles.dayBtn,
-                      { borderColor: theme.main },
-                      selectedDays.includes(full) && { backgroundColor: theme.main },
-                    ]}
-                  >
+                      {borderColor: theme.main},
+                      selectedDays.includes(full) && {
+                        backgroundColor: theme.main,
+                      },
+                    ]}>
                     <Text
                       style={[
                         styles.dayText,
-                        { color: selectedDays.includes(full) ? 'white' : theme.secondary },
-                      ]}
-                    >
+                        {
+                          color: selectedDays.includes(full)
+                            ? 'white'
+                            : theme.secondary,
+                        },
+                      ]}>
                       {short}
                     </Text>
                   </TouchableOpacity>
@@ -134,53 +160,76 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
             </View>
 
             {/* Frequency */}
-            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>FREQUENCY</Text>
-            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.sectionLabel, {color: theme.secondary}]}>
+              FREQUENCY
+            </Text>
+            <View style={[styles.card, {backgroundColor: theme.surface}]}>
               <View style={styles.counterRow}>
                 <TouchableOpacity
-                  onPress={() => setFrequency(f => Math.max(1, f - 1))}
-                  style={[styles.counterBtn, { backgroundColor: theme.card }]}
-                >
-                  <MaterialCommunityIcons name="minus" size={20} color={theme.main} />
+                  onPress={() => activitySave.frequency = f => Math.max(1, f - 1))}
+                  style={[styles.counterBtn, {backgroundColor: theme.card}]}>
+                  <MaterialCommunityIcons
+                    name="minus"
+                    size={20}
+                    color={theme.main}
+                  />
                 </TouchableOpacity>
                 <View style={styles.counterDisplay}>
-                  <Text style={[styles.counterNumber, { color: theme.foreground }]}>{frequency}</Text>
-                  <Text style={[styles.counterUnit, { color: theme.secondary }]}>times / week</Text>
+                  <Text
+                    style={[styles.counterNumber, {color: theme.foreground}]}>
+                    {activitySave.frequency}
+                  </Text>
+                  <Text style={[styles.counterUnit, {color: theme.secondary}]}>
+                    times / week
+                  </Text>
                 </View>
                 <TouchableOpacity
-                  onPress={() => setFrequency(f => f + 1)}
-                  style={[styles.counterBtn, { backgroundColor: theme.card }]}
-                >
-                  <MaterialCommunityIcons name="plus" size={20} color={theme.main} />
+                  onPress={() => activitySave.frequency = (f:number => f + 1)}
+                  style={[styles.counterBtn, {backgroundColor: theme.card}]}>
+                  <MaterialCommunityIcons
+                    name="plus"
+                    size={20}
+                    color={theme.main}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Objective */}
-            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>OBJECTIVE</Text>
-            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.sectionLabel, {color: theme.secondary}]}>
+              OBJECTIVE
+            </Text>
+            <View style={[styles.card, {backgroundColor: theme.surface}]}>
               <View style={styles.objectiveDisplay}>
-                <Text style={[styles.objectiveValue, { color: theme.foreground }]}>{objective}</Text>
-                <Text style={[styles.objectiveUnit, { color: theme.secondary }]}>{activity.unity}</Text>
+                <Text
+                  style={[styles.objectiveValue, {color: theme.foreground}]}>
+                  {activitySave.objective}
+                </Text>
+                <Text style={[styles.objectiveUnit, {color: theme.secondary}]}>
+                  {activitySave.activity.unity}
+                </Text>
               </View>
               <Slider
                 style={styles.slider}
                 minimumValue={1}
                 maximumValue={50}
                 step={1}
-                value={objective}
-                onValueChange={v => setObjective(Math.round(v))}
+                value={activitySave.objective}
+                onValueChange={v => activitySave.objective = (Math.round(v))}
                 minimumTrackTintColor={theme.main}
                 maximumTrackTintColor={theme.border}
                 thumbTintColor={theme.main}
               />
               <TextInput
-                style={[styles.objectiveInput, { color: theme.foreground, borderColor: theme.border }]}
+                style={[
+                  styles.objectiveInput,
+                  {color: theme.foreground, borderColor: theme.border},
+                ]}
                 keyboardType="numeric"
-                value={String(objective)}
+                value={String(activitySave.objective)}
                 onChangeText={v => {
                   const n = parseInt(v, 10);
-                  if (!isNaN(n)) setObjective(n);
+                  if (!isNaN(n)) activitySave.objetive = n;
                 }}
               />
             </View>
@@ -188,12 +237,17 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
             <TouchableOpacity
               onPress={handleSave}
               disabled={saving}
-              style={[styles.saveBtn, { backgroundColor: theme.main }, saving && { opacity: 0.6 }]}
-            >
-              <Text style={styles.saveBtnText}>{saving ? 'Saving…' : 'Save Activity'}</Text>
+              style={[
+                styles.saveBtn,
+                {backgroundColor: theme.main},
+                saving && {opacity: 0.6},
+              ]}>
+              <Text style={styles.saveBtnText}>
+                {saving ? 'Saving…' : 'Save Activity'}
+              </Text>
             </TouchableOpacity>
 
-            <View style={{ height: 40 }} />
+            <View style={{height: 40}} />
           </ScrollView>
         </View>
       </View>

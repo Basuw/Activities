@@ -16,16 +16,25 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Icon from '../../Icon';
 import Slider from '@react-native-community/slider';
+import Svg, { Circle, G } from 'react-native-svg';
 import ActivityDoneDTO from '../../../dto/activities/ActivityDoneDTO';
+import ActivitySaveDTO from '../../../dto/activities/ActivitySaveDTO.tsx';
 
 interface Props {
   isVisible: boolean;
   activity: ActivityDoneDTO;
   onClose: () => void;
   onSave: (updated: ActivityDoneDTO) => void;
+  onEditModel: (updated: ActivitySaveDTO) => void;
 }
 
-const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, onSave }) => {
+const ActivityDoneEditModal: React.FC<Props> = ({
+  isVisible,
+  activity,
+  onClose,
+  onSave,
+  onEditModel,
+}) => {
   const theme = useTheme();
   const [achievement, setAchievement] = useState(activity.achievement);
   const [notes, setNotes] = useState(activity.notes ?? '');
@@ -41,70 +50,123 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
   }, [isVisible, activity]);
 
   const handleSave = () => {
-    onSave({ ...activity, achievement, notes, mark });
+    onSave({...activity, achievement, notes, mark});
     onClose();
   };
 
   const objective = activity.activitySave.objective;
-  const progress = objective > 0 ? Math.min((achievement / objective) * 100, 100) : 0;
+  const progress =
+    objective > 0 ? Math.min((achievement / objective) * 100, 100) : 0;
   const isComplete = progress >= 100;
 
   return (
-    <Modal animationType="slide" transparent visible={isVisible} onRequestClose={onClose}>
+    <Modal
+      animationType="slide"
+      transparent
+      visible={isVisible}
+      onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, { backgroundColor: theme.background }]}>
-          <View style={[styles.handle, { backgroundColor: theme.secondary }]} />
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        <View style={[styles.sheet, {backgroundColor: theme.background}]}>
+          <View style={[styles.handle, {backgroundColor: theme.secondary}]} />
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={[styles.iconWrap, { backgroundColor: `${theme.main}22` }]}>
+            <View
+              style={[styles.iconWrap, {backgroundColor: `${theme.main}22`}]}>
               <MaterialCommunityIcons
                 name={activity.activitySave.activity.icon}
                 size={28}
                 color={theme.main}
               />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.activityName, { color: theme.foreground }]}>
+            <View style={{flex: 1}}>
+              <Text style={[styles.activityName, {color: theme.foreground}]}>
                 {activity.activitySave.activity.name}
               </Text>
-              <Text style={[styles.subtitle, { color: theme.secondary }]}>
+              <Text style={[styles.subtitle, {color: theme.secondary}]}>
                 Log your progress
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon sfSymbol="xmark" androidIcon="close" size={22} color={theme.secondary} />
+            <TouchableOpacity
+              onPress={onEditModel}
+              style={[styles.editBtn, { backgroundColor: `${theme.main}18`, borderColor: `${theme.main}35` }]}>
+              <Icon sfSymbol="pencil" androidIcon="pen" size={14} color={theme.main} />
+              <Text style={[styles.editBtnText, { color: theme.main }]}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onClose}
+              style={[styles.closeBtn, { backgroundColor: theme.card }]}
+              hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}>
+              <Icon sfSymbol="xmark" androidIcon="close" size={14} color={theme.secondary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Achievement */}
-            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>ACHIEVEMENT</Text>
-            <View style={[styles.card, { backgroundColor: theme.surface }]}>
-              {/* Progress visual */}
+            <Text style={[styles.sectionLabel, {color: theme.secondary}]}>
+              ACHIEVEMENT
+            </Text>
+            <View style={[styles.card, {backgroundColor: theme.surface}]}>
+              {/* Progress visual — ring + info */}
               <View style={styles.progressRow}>
-                <Text style={[styles.achievementValue, { color: isComplete ? theme.green : theme.foreground }]}>
-                  {achievement}
-                </Text>
-                <Text style={[styles.objectiveText, { color: theme.secondary }]}>
-                  /{objective} {activity.activitySave.activity.unity}
-                </Text>
-                {isComplete && (
-                  <Icon sfSymbol="checkmark.circle.fill" androidIcon="check-circle" size={24} color={theme.green} />
-                )}
-              </View>
+                {/* Circular ring */}
+                <View style={styles.ringWrap}>
+                  <Svg width={RING_SIZE} height={RING_SIZE}>
+                    <G rotation="-90" origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}>
+                      {/* Track */}
+                      <Circle
+                        cx={RING_SIZE / 2}
+                        cy={RING_SIZE / 2}
+                        r={RADIUS}
+                        stroke={theme.card}
+                        strokeWidth={STROKE}
+                        fill="none"
+                      />
+                      {/* Arc */}
+                      <Circle
+                        cx={RING_SIZE / 2}
+                        cy={RING_SIZE / 2}
+                        r={RADIUS}
+                        stroke={isComplete ? theme.green : theme.main}
+                        strokeWidth={STROKE}
+                        fill="none"
+                        strokeDasharray={CIRCUMFERENCE}
+                        strokeDashoffset={CIRCUMFERENCE * (1 - progress / 100)}
+                        strokeLinecap="round"
+                      />
+                    </G>
+                  </Svg>
+                  {/* Center label */}
+                  <View style={styles.ringCenter} pointerEvents="none">
+                    <Text style={[styles.ringValue, { color: isComplete ? theme.green : theme.foreground }]}>
+                      {achievement}
+                    </Text>
+                  </View>
+                </View>
 
-              <View style={[styles.progressBarBg, { backgroundColor: theme.card }]}>
-                <View
-                  style={[
-                    styles.progressBarFill,
-                    {
-                      width: `${progress}%` as any,
-                      backgroundColor: isComplete ? theme.green : theme.main,
-                    },
-                  ]}
-                />
+                {/* Right info */}
+                <View style={styles.progressInfo}>
+                  <Text style={[styles.progressPercent, { color: isComplete ? theme.green : theme.foreground }]}>
+                    {Math.round(progress)}%
+                  </Text>
+                  <Text style={[styles.progressDetail, { color: theme.secondary }]}>
+                    {achievement} / {objective}
+                  </Text>
+                  <Text style={[styles.progressUnit, { color: theme.secondary }]}>
+                    {activity.activitySave.activity.unity}
+                  </Text>
+                  {isComplete && (
+                    <View style={styles.completeRow}>
+                      <Icon sfSymbol="checkmark.circle.fill" androidIcon="check-circle" size={13} color={theme.green} />
+                      <Text style={[styles.completeText, { color: theme.green }]}>Complete!</Text>
+                    </View>
+                  )}
+                </View>
               </View>
 
               <Slider
@@ -123,12 +185,19 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
               <View style={styles.inputRow}>
                 <TouchableOpacity
                   onPress={() => setAchievement(v => Math.max(0, v - 1))}
-                  style={[styles.stepBtn, { backgroundColor: theme.card }]}
-                >
-                  <Icon sfSymbol="minus" androidIcon="minus" size={18} color={theme.main} />
+                  style={[styles.stepBtn, {backgroundColor: theme.card}]}>
+                  <Icon
+                    sfSymbol="minus"
+                    androidIcon="minus"
+                    size={18}
+                    color={theme.main}
+                  />
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.achievementInput, { color: theme.foreground, borderColor: theme.border }]}
+                  style={[
+                    styles.achievementInput,
+                    {color: theme.foreground, borderColor: theme.border},
+                  ]}
                   keyboardType="numeric"
                   value={String(achievement)}
                   onChangeText={v => {
@@ -138,16 +207,22 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
                 />
                 <TouchableOpacity
                   onPress={() => setAchievement(v => v + 1)}
-                  style={[styles.stepBtn, { backgroundColor: theme.card }]}
-                >
-                  <Icon sfSymbol="plus" androidIcon="plus" size={18} color={theme.main} />
+                  style={[styles.stepBtn, {backgroundColor: theme.card}]}>
+                  <Icon
+                    sfSymbol="plus"
+                    androidIcon="plus"
+                    size={18}
+                    color={theme.main}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Rating */}
-            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>RATING</Text>
-            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.sectionLabel, {color: theme.secondary}]}>
+              RATING
+            </Text>
+            <View style={[styles.card, {backgroundColor: theme.surface}]}>
               <View style={styles.starsRow}>
                 {[0, 1, 2, 3, 4].map(i => (
                   <TouchableOpacity key={i} onPress={() => setMark(i + 1)}>
@@ -162,10 +237,15 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
             </View>
 
             {/* Notes */}
-            <Text style={[styles.sectionLabel, { color: theme.secondary }]}>NOTES</Text>
-            <View style={[styles.card, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.sectionLabel, {color: theme.secondary}]}>
+              NOTES
+            </Text>
+            <View style={[styles.card, {backgroundColor: theme.surface}]}>
               <TextInput
-                style={[styles.notesInput, { color: theme.foreground, borderColor: theme.border }]}
+                style={[
+                  styles.notesInput,
+                  {color: theme.foreground, borderColor: theme.border},
+                ]}
                 placeholder="How did it go?"
                 placeholderTextColor={theme.secondary}
                 value={notes}
@@ -180,19 +260,19 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
             <View style={styles.buttonsRow}>
               <TouchableOpacity
                 onPress={onClose}
-                style={[styles.cancelBtn, { borderColor: theme.border }]}
-              >
-                <Text style={[styles.cancelText, { color: theme.secondary }]}>Cancel</Text>
+                style={[styles.cancelBtn, {borderColor: theme.border}]}>
+                <Text style={[styles.cancelText, {color: theme.secondary}]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSave}
-                style={[styles.saveBtn, { backgroundColor: theme.main }]}
-              >
+                style={[styles.saveBtn, {backgroundColor: theme.main}]}>
                 <Text style={styles.saveBtnText}>Save</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={{ height: 40 }} />
+            <View style={{height: 40}} />
           </ScrollView>
         </View>
       </View>
@@ -201,6 +281,12 @@ const ActivityDoneEditModal: React.FC<Props> = ({ isVisible, activity, onClose, 
 };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// ─── Ring constants ────────────────────────────────────────────────────────────
+const RING_SIZE = 100;
+const STROKE    = 9;
+const RADIUS    = (RING_SIZE - STROKE) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
@@ -235,6 +321,23 @@ const styles = StyleSheet.create({
   },
   activityName: { fontSize: 19, fontWeight: '700' },
   subtitle: { fontSize: 13, marginTop: 2 },
+  editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  editBtnText: { fontSize: 13, fontWeight: '700' },
+  closeBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   sectionLabel: {
     fontSize: 11,
     fontWeight: '700',
@@ -243,24 +346,32 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   card: { borderRadius: 18, padding: 16, marginBottom: 20 },
+  // ── ring ──
   progressRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    gap: 20,
     marginBottom: 12,
-    gap: 4,
   },
-  achievementValue: { fontSize: 36, fontWeight: '700' },
-  objectiveText: { fontSize: 18 },
-  progressBarBg: {
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 4,
+  ringWrap: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3,
+  ringCenter: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  ringValue: { fontSize: 24, fontWeight: '800' },
+  progressInfo: { flex: 1, gap: 2 },
+  progressPercent: { fontSize: 30, fontWeight: '800', lineHeight: 34 },
+  progressDetail: { fontSize: 14, fontWeight: '500' },
+  progressUnit: { fontSize: 12 },
+  completeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  completeText: { fontSize: 12, fontWeight: '700' },
+  // ─────────
   slider: { width: '100%', height: 40 },
   inputRow: {
     flexDirection: 'row',

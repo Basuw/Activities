@@ -11,8 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from 'styled-components';
-// @ts-ignore
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../components/Icon';
 import { authService } from '../services/AuthService';
 import UserModel from '../models/UserModel';
 
@@ -53,7 +52,7 @@ const Login: React.FC<Props> = ({ onLoginSuccess, onNavigateToRegister }) => {
         {/* Logo / Branding */}
         <View style={styles.brandSection}>
           <View style={[styles.logoCircle, { backgroundColor: theme.main }]}>
-            <MaterialCommunityIcons name="lightning-bolt" size={48} color="white" />
+            <Icon sfSymbol="bolt.fill" androidIcon="lightning-bolt" size={48} color="white" />
           </View>
           <Text style={[styles.appName, { color: theme.foreground }]}>Activities</Text>
           <Text style={[styles.tagline, { color: theme.secondary }]}>
@@ -74,7 +73,7 @@ const Login: React.FC<Props> = ({ onLoginSuccess, onNavigateToRegister }) => {
                 { backgroundColor: theme.surface, borderColor: error && !mail ? theme.orange : theme.border },
               ]}
             >
-              <MaterialCommunityIcons name="email-outline" size={20} color={theme.secondary} />
+              <Icon sfSymbol="envelope" androidIcon="email-outline" size={20} color={theme.secondary} />
               <TextInput
                 style={[styles.input, { color: theme.foreground }]}
                 placeholder="your@email.com"
@@ -98,7 +97,7 @@ const Login: React.FC<Props> = ({ onLoginSuccess, onNavigateToRegister }) => {
                 { backgroundColor: theme.surface, borderColor: error && !password ? theme.orange : theme.border },
               ]}
             >
-              <MaterialCommunityIcons name="lock-outline" size={20} color={theme.secondary} />
+              <Icon sfSymbol="lock" androidIcon="lock-outline" size={20} color={theme.secondary} />
               <TextInput
                 style={[styles.input, { color: theme.foreground }]}
                 placeholder="Your password"
@@ -111,8 +110,9 @@ const Login: React.FC<Props> = ({ onLoginSuccess, onNavigateToRegister }) => {
                 onSubmitEditing={handleLogin}
               />
               <TouchableOpacity onPress={() => setShowPassword(v => !v)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <MaterialCommunityIcons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                <Icon
+                  sfSymbol={showPassword ? 'eye.slash' : 'eye'}
+                  androidIcon={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
                   color={theme.secondary}
                 />
@@ -123,7 +123,7 @@ const Login: React.FC<Props> = ({ onLoginSuccess, onNavigateToRegister }) => {
           {/* Error message */}
           {error ? (
             <View style={[styles.errorBanner, { backgroundColor: `${theme.orange}18`, borderColor: `${theme.orange}40` }]}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={16} color={theme.orange} />
+              <Icon sfSymbol="exclamationmark.circle" androidIcon="alert-circle-outline" size={16} color={theme.orange} />
               <Text style={[styles.errorText, { color: theme.orange }]}>{error}</Text>
             </View>
           ) : null}
@@ -144,7 +144,7 @@ const Login: React.FC<Props> = ({ onLoginSuccess, onNavigateToRegister }) => {
 
           {/* Security note */}
           <View style={styles.securityNote}>
-            <MaterialCommunityIcons name="shield-check-outline" size={14} color={theme.secondary} />
+            <Icon sfSymbol="checkmark.shield" androidIcon="shield-check-outline" size={14} color={theme.secondary} />
             <Text style={[styles.securityText, { color: theme.secondary }]}>
               Password is encrypted with SHA-256 before being sent
             </Text>

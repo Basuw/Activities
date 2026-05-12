@@ -1,8 +1,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'styled-components';
-// @ts-ignore
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../components/Icon';
 import UserModel from '../models/UserModel';
 
 interface Props {
@@ -29,11 +28,11 @@ const Profile: React.FC<Props> = ({ user, onLogout }) => {
       {/* Info cards */}
       <View style={styles.cards}>
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
-          <InfoRow icon="weight-kilogram" label="Weight" value={`${user.weight} kg`} theme={theme} />
+          <InfoRow sfSymbol="scalemass" androidIcon="weight-kilogram" label="Weight" value={`${user.weight} kg`} theme={theme} />
           <Divider theme={theme} />
-          <InfoRow icon="human-male-height" label="Height" value={`${user.height} m`} theme={theme} />
+          <InfoRow sfSymbol="ruler" androidIcon="human-male-height" label="Height" value={`${user.height} m`} theme={theme} />
           <Divider theme={theme} />
-          <InfoRow icon="flag-checkered" label="Target weight" value={`${user.targetWeight} kg`} theme={theme} />
+          <InfoRow sfSymbol="flag.checkered" androidIcon="flag-checkered" label="Target weight" value={`${user.targetWeight} kg`} theme={theme} />
         </View>
       </View>
 
@@ -43,7 +42,7 @@ const Profile: React.FC<Props> = ({ user, onLogout }) => {
         onPress={onLogout}
         activeOpacity={0.8}
       >
-        <MaterialCommunityIcons name="logout" size={20} color={theme.orange} />
+        <Icon sfSymbol="rectangle.portrait.and.arrow.right" androidIcon="logout" size={20} color={theme.orange} />
         <Text style={[styles.logoutText, { color: theme.orange }]}>Sign out</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -51,18 +50,20 @@ const Profile: React.FC<Props> = ({ user, onLogout }) => {
 };
 
 const InfoRow = ({
-  icon,
+  sfSymbol,
+  androidIcon,
   label,
   value,
   theme,
 }: {
-  icon: string;
+  sfSymbol: string;
+  androidIcon: string;
   label: string;
   value: string;
   theme: any;
 }) => (
   <View style={styles.infoRow}>
-    <MaterialCommunityIcons name={icon} size={20} color={theme.secondary} />
+    <Icon sfSymbol={sfSymbol} androidIcon={androidIcon} size={20} color={theme.secondary} />
     <Text style={[styles.infoLabel, { color: theme.secondary }]}>{label}</Text>
     <Text style={[styles.infoValue, { color: theme.foreground }]}>{value}</Text>
   </View>

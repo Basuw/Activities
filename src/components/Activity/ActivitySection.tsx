@@ -1,8 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'styled-components';
-// @ts-ignore
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../Icon';
 import Activity from './Activity';
 import ActivityProgressModel from '../../models/Activities/ActivityProgressModel';
 
@@ -27,7 +26,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activities, selectedD
   if (activities.length === 0) {
     return (
       <View style={[styles.emptyContainer, { backgroundColor: theme.surface }]}>
-        <MaterialCommunityIcons name="calendar-blank" size={48} color={theme.secondary} />
+        <Icon sfSymbol="calendar" androidIcon="calendar-blank" size={48} color={theme.secondary} />
         <Text style={[styles.emptyTitle, { color: theme.foreground }]}>No activities yet</Text>
         <Text style={[styles.emptySubtitle, { color: theme.secondary }]}>
           Tap + to add an activity for this day

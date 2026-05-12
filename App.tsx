@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Platform, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeBottomTabNavigator } from '@bottom-tabs/react-navigation';
 import { ThemeProvider } from 'styled-components';
@@ -46,23 +46,17 @@ const App = () => {
           <NavigationContainer>
             <Tab.Navigator
               tabBarActiveTintColor={theme.main}
-              tabBarInactiveTintColor={theme.secondary}>
+              tabBarInactiveTintColor={theme.secondary}
+            >
               <Tab.Screen
                 name="Activities"
                 options={{
                   tabBarLabel: 'Activities',
-
-                  tabBarIcon : () =>  Platform.select({
-                    ios: {
-                      type: 'sfSymbol',
-                      name: 'checklist',
-                    },
-                    android: {
-                      type: 'materialSymbol',
-                      name: 'home',
-                    },
+                  tabBarIcon: ({ focused }) => ({
+                    sfSymbol: focused ? 'checklist' : 'list.bullet',
                   }),
-                }}>
+                }}
+              >
                 {() => <Activities user={user} />}
               </Tab.Screen>
 
@@ -70,10 +64,11 @@ const App = () => {
                 name="Training"
                 options={{
                   tabBarLabel: 'Training',
-                  tabBarIcon: ({focused}) => ({
-                    sfSymbol: focused ? 'workout.fill' : '',
+                  tabBarIcon: ({ focused }) => ({
+                    sfSymbol: focused ? 'dumbbell.fill' : 'dumbbell',
                   }),
-                }}>
+                }}
+              >
                 {() => <Training user={user} onLogout={handleLogout} />}
               </Tab.Screen>
 
@@ -81,10 +76,11 @@ const App = () => {
                 name="Profile"
                 options={{
                   tabBarLabel: 'Profile',
-                  tabBarIcon: ({focused}) => ({
+                  tabBarIcon: ({ focused }) => ({
                     sfSymbol: focused ? 'person.fill' : 'person',
                   }),
-                }}>
+                }}
+              >
                 {() => <Profile user={user} onLogout={handleLogout} />}
               </Tab.Screen>
             </Tab.Navigator>

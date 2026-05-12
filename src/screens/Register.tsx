@@ -12,8 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from 'styled-components';
-// @ts-ignore
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../components/Icon';
 import { authService } from '../services/AuthService';
 import UserModel from '../models/UserModel';
 
@@ -71,14 +70,14 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
         >
           {/* Back button */}
           <TouchableOpacity style={styles.backBtn} onPress={onNavigateToLogin} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <MaterialCommunityIcons name="arrow-left" size={22} color={theme.secondary} />
+            <Icon sfSymbol="chevron.left" androidIcon="arrow-left" size={22} color={theme.secondary} />
             <Text style={[styles.backText, { color: theme.secondary }]}>Sign in</Text>
           </TouchableOpacity>
 
           {/* Branding */}
           <View style={styles.brandSection}>
             <View style={[styles.logoCircle, { backgroundColor: theme.main }]}>
-              <MaterialCommunityIcons name="lightning-bolt" size={48} color="white" />
+              <Icon sfSymbol="bolt.fill" androidIcon="lightning-bolt" size={48} color="white" />
             </View>
             <Text style={[styles.appName, { color: theme.foreground }]}>Activities</Text>
           </View>
@@ -94,7 +93,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
             <View style={styles.fieldWrapper}>
               <Text style={[styles.fieldLabel, { color: theme.secondary }]}>Username</Text>
               <View style={[styles.inputRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <MaterialCommunityIcons name="account-outline" size={20} color={theme.secondary} />
+                <Icon sfSymbol="person" androidIcon="account-outline" size={20} color={theme.secondary} />
                 <TextInput
                   style={[styles.input, { color: theme.foreground }]}
                   placeholder="Your name"
@@ -112,7 +111,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
             <View style={styles.fieldWrapper}>
               <Text style={[styles.fieldLabel, { color: theme.secondary }]}>Email</Text>
               <View style={[styles.inputRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <MaterialCommunityIcons name="email-outline" size={20} color={theme.secondary} />
+                <Icon sfSymbol="envelope" androidIcon="email-outline" size={20} color={theme.secondary} />
                 <TextInput
                   style={[styles.input, { color: theme.foreground }]}
                   placeholder="your@email.com"
@@ -131,7 +130,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
             <View style={styles.fieldWrapper}>
               <Text style={[styles.fieldLabel, { color: theme.secondary }]}>Password</Text>
               <View style={[styles.inputRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <MaterialCommunityIcons name="lock-outline" size={20} color={theme.secondary} />
+                <Icon sfSymbol="lock" androidIcon="lock-outline" size={20} color={theme.secondary} />
                 <TextInput
                   style={[styles.input, { color: theme.foreground }]}
                   placeholder="At least 6 characters"
@@ -143,8 +142,9 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
                   returnKeyType="next"
                 />
                 <TouchableOpacity onPress={() => setShowPassword(v => !v)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <MaterialCommunityIcons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  <Icon
+                    sfSymbol={showPassword ? 'eye.slash' : 'eye'}
+                    androidIcon={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
                     color={theme.secondary}
                   />
@@ -156,7 +156,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
             <View style={styles.fieldWrapper}>
               <Text style={[styles.fieldLabel, { color: theme.secondary }]}>Confirm password</Text>
               <View style={[styles.inputRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <MaterialCommunityIcons name="lock-check-outline" size={20} color={theme.secondary} />
+                <Icon sfSymbol="lock.badge.checkmark" androidIcon="lock-check-outline" size={20} color={theme.secondary} />
                 <TextInput
                   style={[styles.input, { color: theme.foreground }]}
                   placeholder="Repeat your password"
@@ -169,8 +169,9 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
                   onSubmitEditing={handleRegister}
                 />
                 <TouchableOpacity onPress={() => setShowConfirm(v => !v)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <MaterialCommunityIcons
-                    name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
+                  <Icon
+                    sfSymbol={showConfirm ? 'eye.slash' : 'eye'}
+                    androidIcon={showConfirm ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
                     color={theme.secondary}
                   />
@@ -181,7 +182,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
             {/* Error */}
             {error ? (
               <View style={[styles.errorBanner, { backgroundColor: `${theme.orange}18`, borderColor: `${theme.orange}40` }]}>
-                <MaterialCommunityIcons name="alert-circle-outline" size={16} color={theme.orange} />
+                <Icon sfSymbol="exclamationmark.circle" androidIcon="alert-circle-outline" size={16} color={theme.orange} />
                 <Text style={[styles.errorText, { color: theme.orange }]}>{error}</Text>
               </View>
             ) : null}
@@ -202,7 +203,7 @@ const Register: React.FC<Props> = ({ onRegisterSuccess, onNavigateToLogin }) => 
 
             {/* Security note */}
             <View style={styles.securityNote}>
-              <MaterialCommunityIcons name="shield-check-outline" size={14} color={theme.secondary} />
+              <Icon sfSymbol="checkmark.shield" androidIcon="shield-check-outline" size={14} color={theme.secondary} />
               <Text style={[styles.securityText, { color: theme.secondary }]}>
                 Password is encrypted with SHA-256 before being sent
               </Text>

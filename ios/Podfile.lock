@@ -1355,6 +1355,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-sfsymbols (1.2.2):
+    - React
   - react-native-slider (4.5.5):
     - DoubleConversion
     - glog
@@ -1884,6 +1886,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-bottom-tabs (from `../node_modules/react-native-bottom-tabs`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-sfsymbols (from `../node_modules/react-native-sfsymbols`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -2001,6 +2004,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-bottom-tabs"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-sfsymbols:
+    :path: "../node_modules/react-native-sfsymbols"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
   React-nativeconfig:
@@ -2107,6 +2112,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: f30949ee318ba90b9668de1e325b98838b9a4da2
   react-native-bottom-tabs: c5d3346cc490771e257e0055f81fff9e91396981
   react-native-safe-area-context: 2985d96d364676d1e2e2d5e77f64860874e31e13
+  react-native-sfsymbols: 3309f24c98d32705568c84b714268f3ec62017c7
   react-native-slider: d1a9121980fc81678c6d30b82f312c778fba563c
   React-nativeconfig: 470fce6d871c02dc5eff250a362d56391b7f52d6
   React-NativeModulesApple: 1586448c61a7c2bd4040cc03ccde66a72037e77e

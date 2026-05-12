@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'styled-components';
 // @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../Icon';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -151,13 +152,13 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
           <Animated.View style={[StyleSheet.absoluteFill, styles.bg, bgStyle]}>
             {/* Green — swipe right */}
             <Animated.View style={[styles.bgLeft, greenIconStyle]}>
-              <MaterialCommunityIcons name="check-bold" size={26} color="white" />
+              <Icon sfSymbol="checkmark" androidIcon="check-bold" size={26} color="white" />
               <Text style={styles.bgLabel}>Done!</Text>
             </Animated.View>
             {/* Red — swipe left */}
             <Animated.View style={[styles.bgRight, redIconStyle]}>
               <Text style={styles.bgLabel}>Annuler</Text>
-              <MaterialCommunityIcons name="close-circle-outline" size={26} color="white" />
+              <Icon sfSymbol="xmark.circle" androidIcon="close-circle-outline" size={26} color="white" />
             </Animated.View>
           </Animated.View>
 

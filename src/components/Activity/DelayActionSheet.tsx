@@ -7,8 +7,7 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from 'styled-components';
-// @ts-ignore
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from '../Icon';
 
 export type DelayOption = '1h' | 'tomorrow' | 'skip';
 
@@ -21,28 +20,32 @@ interface Props {
 
 const OPTIONS: {
   key: DelayOption;
-  icon: string;
+  sfSymbol: string;
+  androidIcon: string;
   label: string;
   sublabel: string;
   color: string;
 }[] = [
   {
     key: '1h',
-    icon: 'clock-outline',
+    sfSymbol: 'clock',
+    androidIcon: 'clock-outline',
     label: 'Dans 1 heure',
     sublabel: 'Je m\'y mets plus tard aujourd\'hui',
     color: '#7C3AED',
   },
   {
     key: 'tomorrow',
-    icon: 'calendar-arrow-right',
+    sfSymbol: 'calendar.badge.plus',
+    androidIcon: 'calendar-arrow-right',
     label: 'Demain',
     sublabel: 'Reporter à demain',
     color: '#2563EB',
   },
   {
     key: 'skip',
-    icon: 'close-circle-outline',
+    sfSymbol: 'xmark.circle',
+    androidIcon: 'close-circle-outline',
     label: 'Passer aujourd\'hui',
     sublabel: 'Ne pas comptabiliser cette séance',
     color: '#EF4444',
@@ -73,7 +76,7 @@ const DelayActionSheet: React.FC<Props> = ({
 
           {/* Header */}
           <View style={styles.header}>
-            <MaterialCommunityIcons name="clock-fast" size={20} color={theme.secondary} />
+            <Icon sfSymbol="timer" androidIcon="clock-fast" size={20} color={theme.secondary} />
             <Text style={[styles.headerTitle, { color: theme.secondary }]}>
               Reporter · {activityName}
             </Text>
@@ -92,7 +95,7 @@ const DelayActionSheet: React.FC<Props> = ({
                   onPress={() => onSelect(opt.key)}
                 >
                   <View style={[styles.iconWrap, { backgroundColor: `${opt.color}18` }]}>
-                    <MaterialCommunityIcons name={opt.icon} size={22} color={opt.color} />
+                    <Icon sfSymbol={opt.sfSymbol} androidIcon={opt.androidIcon} size={22} color={opt.color} />
                   </View>
                   <View style={styles.optionText}>
                     <Text style={[styles.optionLabel, { color: theme.foreground }]}>
@@ -102,7 +105,7 @@ const DelayActionSheet: React.FC<Props> = ({
                       {opt.sublabel}
                     </Text>
                   </View>
-                  <MaterialCommunityIcons name="chevron-right" size={18} color={theme.secondary} />
+                  <Icon sfSymbol="chevron.right" androidIcon="chevron-right" size={18} color={theme.secondary} />
                 </TouchableOpacity>
               </React.Fragment>
             ))}

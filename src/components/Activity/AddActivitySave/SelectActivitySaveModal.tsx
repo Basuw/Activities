@@ -201,7 +201,7 @@ const SelectActivitySaveModal: React.FC<Props> = ({ isVisible, user, onClose, fe
       {selectedActivity && (
         <ActivitySaveDetailsModal
           isVisible
-          activitySave={new ActivitySaveModel(0,3, 10, new Date(), selectedActivity, "", "", user)}
+          activitySave={new ActivitySaveModel(0,3, 10, new Date(), selectedActivity, '', '', user)}
           onClose={() => setSelectedActivity(null)}
           refreshActivities={handleSaved}
         />

@@ -114,51 +114,41 @@ const ActivityDoneEditModal: React.FC<Props> = ({
             <View style={[styles.card, {backgroundColor: theme.surface}]}>
               {/* Progress visual — ring + info */}
               <View style={styles.progressRow}>
-                {/* Circular ring */}
-                <View style={styles.ringWrap}>
-                  <Svg width={RING_SIZE} height={RING_SIZE}>
-                    <G rotation="-90" origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}>
-                      {/* Track */}
-                      <Circle
-                        cx={RING_SIZE / 2}
-                        cy={RING_SIZE / 2}
-                        r={RADIUS}
-                        stroke={theme.card}
-                        strokeWidth={STROKE}
-                        fill="none"
-                      />
-                      {/* Arc */}
-                      <Circle
-                        cx={RING_SIZE / 2}
-                        cy={RING_SIZE / 2}
-                        r={RADIUS}
-                        stroke={isComplete ? theme.green : theme.main}
-                        strokeWidth={STROKE}
-                        fill="none"
-                        strokeDasharray={CIRCUMFERENCE}
-                        strokeDashoffset={CIRCUMFERENCE * (1 - progress / 100)}
-                        strokeLinecap="round"
-                      />
-                    </G>
-                  </Svg>
-                  {/* Center label */}
-                  <View style={styles.ringCenter} pointerEvents="none">
-                    <Text style={[styles.ringValue, { color: isComplete ? theme.green : theme.foreground }]}>
-                      {achievement}
-                    </Text>
-                  </View>
-                </View>
+                {/* Circular ring (no label inside) */}
+                <Svg width={RING_SIZE} height={RING_SIZE}>
+                  <G rotation="-90" origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}>
+                    <Circle
+                      cx={RING_SIZE / 2}
+                      cy={RING_SIZE / 2}
+                      r={RADIUS}
+                      stroke={theme.card}
+                      strokeWidth={STROKE}
+                      fill="none"
+                    />
+                    <Circle
+                      cx={RING_SIZE / 2}
+                      cy={RING_SIZE / 2}
+                      r={RADIUS}
+                      stroke={isComplete ? theme.green : theme.main}
+                      strokeWidth={STROKE}
+                      fill="none"
+                      strokeDasharray={CIRCUMFERENCE}
+                      strokeDashoffset={CIRCUMFERENCE * (1 - progress / 100)}
+                      strokeLinecap="round"
+                    />
+                  </G>
+                </Svg>
 
-                {/* Right info */}
+                {/* Right: achievement / objective unit + % + complete badge */}
                 <View style={styles.progressInfo}>
-                  <Text style={[styles.progressPercent, { color: isComplete ? theme.green : theme.foreground }]}>
+                  <Text style={[styles.progressFraction, { color: isComplete ? theme.green : theme.foreground }]}>
+                    {achievement}
+                    <Text style={[styles.progressObjective, { color: theme.secondary }]}>
+                      {' '}/ {objective} {activity.activitySave.activity.unity}
+                    </Text>
+                  </Text>
+                  <Text style={[styles.progressPercent, { color: isComplete ? theme.green : theme.secondary }]}>
                     {Math.round(progress)}%
-                  </Text>
-                  <Text style={[styles.progressDetail, { color: theme.secondary }]}>
-                    {achievement} / {objective}
-                  </Text>
-                  <Text style={[styles.progressUnit, { color: theme.secondary }]}>
-                    {activity.activitySave.activity.unity}
                   </Text>
                   {isComplete && (
                     <View style={styles.completeRow}>
@@ -283,8 +273,8 @@ const ActivityDoneEditModal: React.FC<Props> = ({
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // ─── Ring constants ────────────────────────────────────────────────────────────
-const RING_SIZE = 100;
-const STROKE    = 9;
+const RING_SIZE = 56;
+const STROKE    = 6;
 const RADIUS    = (RING_SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -350,26 +340,14 @@ const styles = StyleSheet.create({
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 14,
     marginBottom: 12,
   },
-  ringWrap: {
-    width: RING_SIZE,
-    height: RING_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ringCenter: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ringValue: { fontSize: 24, fontWeight: '800' },
-  progressInfo: { flex: 1, gap: 2 },
-  progressPercent: { fontSize: 30, fontWeight: '800', lineHeight: 34 },
-  progressDetail: { fontSize: 14, fontWeight: '500' },
-  progressUnit: { fontSize: 12 },
-  completeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  progressInfo: { flex: 1, gap: 3 },
+  progressFraction: { fontSize: 18, fontWeight: '700' },
+  progressObjective: { fontSize: 15, fontWeight: '400' },
+  progressPercent: { fontSize: 13, fontWeight: '500' },
+  completeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   completeText: { fontSize: 12, fontWeight: '700' },
   // ─────────
   slider: { width: '100%', height: 40 },

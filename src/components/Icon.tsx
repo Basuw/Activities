@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleProp, View, ViewStyle } from 'react-native';
 import { SFSymbol } from 'react-native-sfsymbols';
 // @ts-ignore
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -11,18 +11,35 @@ interface IconProps {
   androidIcon: string;
   size?: number;
   color?: string;
+  /** Extra styles applied to the icon wrapper (useful for margins/alignment) */
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
  * Cross-platform icon component.
  * - iOS  → native SF Symbol via react-native-sfsymbols
  * - Android → MaterialCommunityIcons
+ *
+ * SFSymbol renders in a box of exactly `size × size` with no natural padding,
+ * so we wrap it in a fixed-size View to guarantee consistent bounding boxes.
  */
-const Icon: React.FC<IconProps> = ({ sfSymbol, androidIcon, size = 24, color }) => {
+const Icon: React.FC<IconProps> = ({ sfSymbol, androidIcon, size = 24, color, style }) => {
   if (Platform.OS === 'ios') {
-    return <SFSymbol name={sfSymbol} size={size} color={color} />;
+    return (
+      <View
+        style={[
+          { width: size, height: size, alignItems: 'center', justifyContent: 'center' },
+          style,
+        ]}>
+        <SFSymbol name={sfSymbol} size={size} color={color} />
+      </View>
+    );
   }
-  return <MaterialCommunityIcons name={androidIcon} size={size} color={color} />;
+  return (
+    <View style={style}>
+      <MaterialCommunityIcons name={androidIcon} size={size} color={color} />
+    </View>
+  );
 };
 
 export default Icon;

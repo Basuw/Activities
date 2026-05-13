@@ -72,6 +72,8 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   };
 
   const handleEditActivitySave= (updated: ActivitySaveDTO)=>{
+    setEditModalVisible(false);
+    openEditModal()
     console.log("test")
   };
 

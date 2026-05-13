@@ -15,7 +15,6 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Slider from '@react-native-community/slider';
 import DayEnum from '../../../models/Activities/DayEnum';
 import ActivitySaveModel from '../../../models/Activities/ActivitySaveModel';
-import ActivitySaveDTO from '../../../dto/activities/ActivitySaveDTO';
 import { activityApiService } from '../../../services/ActivityApiService';
 import { CreateActivitySaveDTO } from '../../../dto/activities/CreateActivitySaveDTO';
 import { UpdateActivitySaveDTO } from '../../../dto/activities/UpdateActivitySaveDTO';
@@ -32,37 +31,38 @@ const DAYS: { short: string; full: DayEnum }[] = [
 
 interface Props {
   isVisible: boolean;
+  /** Modèle de base : activity, user, frequency, objective (id=0 si création) */
   activitySave: ActivitySaveModel;
+  /** Saves existants pour ce groupe — jours déjà configurés, affichés en lecture seule */
+  existingSaves?: ActivitySaveModel[];
   onClose: () => void;
-  /** Mode création (id = 0) — appelé après le POST */
+  /** Appelé après le POST des nouveaux jours */
   refreshActivities?: () => void;
-  /** Mode édition (id > 0) — appelé après le PATCH avec les nouvelles valeurs */
-  onSaved?: (updated: ActivitySaveDTO) => void;
 }
 
 const ActivitySaveDetailsModal: React.FC<Props> = ({
   isVisible,
   activitySave,
+  existingSaves = [],
   onClose,
   refreshActivities,
-  onSaved,
 }) => {
   const theme = useTheme();
-  const isEditMode = activitySave.id > 0;
 
   const [draft, setDraft] = useState<ActivitySaveModel>({ ...activitySave });
   const [selectedDays, setSelectedDays] = useState<DayEnum[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // Resync à chaque ouverture
+  // Resync à chaque ouverture : pré-sélectionner les jours déjà en base
   useEffect(() => {
     if (isVisible) {
       setDraft({ ...activitySave });
-      // En mode édition, pré-sélectionner le jour existant s'il y en a un
-      const existingDay = activitySave.day as DayEnum | undefined;
-      setSelectedDays(existingDay ? [existingDay] : []);
+      const days = existingSaves
+        .map(s => s.day as DayEnum)
+        .filter(Boolean);
+      setSelectedDays(days);
     }
-  }, [isVisible, activitySave]);
+  }, [isVisible, activitySave, existingSaves]);
 
   const update = (patch: Partial<ActivitySaveModel>) =>
     setDraft(prev => ({ ...prev, ...patch }));
@@ -72,45 +72,71 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
       prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day],
     );
 
+  // ── Set des jours déjà en base (stable, recalculé si existingSaves change) ──
+  const existingDaySet = new Set(
+    existingSaves.map(s => s.day as DayEnum).filter(Boolean),
+  );
+
+  // ── Dérive les 3 listes à partir du diff existingSaves ↔ selectedDays ──────
+
+  /** Saves à supprimer : existaient en base, leur jour n'est plus sélectionné */
+  const toDelete = existingSaves.filter(
+    s => s.day && !selectedDays.includes(s.day as DayEnum),
+  );
+
+  /** Jours à créer : sélectionnés mais pas encore en base */
+  const toCreate = selectedDays.filter(d => !existingDaySet.has(d));
+
+  /** Saves à mettre à jour : existaient en base, leur jour est toujours sélectionné */
+  const toUpdate = existingSaves.filter(
+    s => s.day && selectedDays.includes(s.day as DayEnum),
+  );
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (isEditMode) {
-        // ── PATCH ────────────────────────────────────────────────────────────
-        const dto: UpdateActivitySaveDTO = {
+      const calls: Promise<unknown>[] = [];
+
+      // DELETE — jours décochés
+      toDelete.forEach(s => {
+        calls.push(activityApiService.deleteActivitySave(s.id));
+      });
+
+      // POST — nouveaux jours cochés
+      if (toCreate.length > 0) {
+        const createList: CreateActivitySaveDTO[] = toCreate.map(day => ({
           frequency: draft.frequency,
           objective: draft.objective,
-          notes: draft.notes,
-          ...(selectedDays.length > 0 && { day: selectedDays[0] }),
-        };
-        await activityApiService.updateActivitySave(draft.id, dto);
-        // Renvoyer un ActivitySaveDTO mis à jour au parent
-        const updated: ActivitySaveDTO = {
-          id: draft.id,
+          notes: draft.notes ?? '',
+          activity: { id: draft.activity.id },
+          user: { id: draft.user.id },
+          day,
+        }));
+        calls.push(activityApiService.createActivitySave(createList));
+      } else if (existingSaves.length === 0 && toCreate.length === 0) {
+        // Création sans jour sélectionné
+        const createList: CreateActivitySaveDTO[] = [{
           frequency: draft.frequency,
           objective: draft.objective,
-          activity: draft.activity,
-          userId: draft.user.id,
-        };
-        onSaved?.(updated);
-      } else {
-        // ── POST (une requête par jour sélectionné) ───────────────────────
-        const days = selectedDays.length > 0 ? selectedDays : [undefined];
-        await Promise.all(
-          days.map(day => {
-            const dto: CreateActivitySaveDTO = {
-              frequency: draft.frequency,
-              objective: draft.objective,
-              notes: draft.notes ?? '',
-              activity: { id: draft.activity.id },
-              user: { id: draft.user.id },
-              ...(day !== undefined && { day: day as DayEnum }),
-            };
-            return activityApiService.createActivitySave(dto);
-          }),
-        );
-        refreshActivities?.();
+          notes: draft.notes ?? '',
+          activity: { id: draft.activity.id },
+          user: { id: draft.user.id },
+        }];
+        calls.push(activityApiService.createActivitySave(createList));
       }
+
+      // PATCH — jours toujours cochés (freq/obj/notes peuvent avoir changé)
+      const updateDto: UpdateActivitySaveDTO = {
+        frequency: draft.frequency,
+        objective: draft.objective,
+        notes: draft.notes,
+      };
+      toUpdate.forEach(s => {
+        calls.push(activityApiService.updateActivitySave(s.id, updateDto));
+      });
+
+      await Promise.all(calls);
+      refreshActivities?.();
       onClose();
     } catch (e) {
       console.error('Failed to save activity', e);
@@ -144,7 +170,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
                 {draft.activity.name}
               </Text>
               <Text style={[styles.activityCategory, { color: theme.secondary }]}>
-                {isEditMode ? 'Edit activity settings' : draft.activity.category}
+                {draft.activity.category}
               </Text>
             </View>
             <TouchableOpacity
@@ -161,37 +187,44 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
             <View style={[styles.card, { backgroundColor: theme.surface }]}>
               <Text style={[styles.fieldLabel, { color: theme.foreground }]}>Days of the week</Text>
               <Text style={[styles.fieldHint, { color: theme.secondary }]}>
-                {isEditMode
-                  ? 'Select the day for this activity'
+                {existingSaves.length > 0
+                  ? 'Toggle days · red = will delete · green = will add'
                   : 'Leave empty to track on any day'}
               </Text>
               <View style={styles.daysRow}>
-                {DAYS.map(({ short, full }) => (
-                  <TouchableOpacity
-                    key={short}
-                    onPress={() => {
-                      if (isEditMode) {
-                        // En édition : sélection unique (on change de jour)
-                        setSelectedDays(prev =>
-                          prev.includes(full) ? [] : [full],
-                        );
-                      } else {
-                        toggleDay(full);
-                      }
-                    }}
-                    style={[
-                      styles.dayBtn,
-                      { borderColor: theme.main },
-                      selectedDays.includes(full) && { backgroundColor: theme.main },
-                    ]}>
-                    <Text style={[
-                      styles.dayText,
-                      { color: selectedDays.includes(full) ? 'white' : theme.secondary },
-                    ]}>
-                      {short}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {DAYS.map(({ short, full }) => {
+                  const wasExisting = existingDaySet.has(full);
+                  const isSelected = selectedDays.includes(full);
+                  // will be deleted: was in base, now deselected
+                  const willDelete = wasExisting && !isSelected;
+                  // will be created: not in base, now selected
+                  const willCreate = !wasExisting && isSelected;
+                  // kept/updated: was in base, still selected
+                  const kept = wasExisting && isSelected;
+
+                  return (
+                    <TouchableOpacity
+                      key={short}
+                      onPress={() => toggleDay(full)}
+                      activeOpacity={0.7}
+                      style={[
+                        styles.dayBtn,
+                        kept     && { backgroundColor: theme.main,   borderColor: theme.main },
+                        willCreate && { backgroundColor: theme.green,  borderColor: theme.green },
+                        willDelete && { borderColor: theme.orange, borderStyle: 'dashed' },
+                        !wasExisting && !isSelected && { borderColor: theme.border },
+                      ]}>
+                      <Text style={[
+                        styles.dayText,
+                        { color: (kept || willCreate) ? 'white'
+                                : willDelete          ? theme.orange
+                                : theme.secondary },
+                      ]}>
+                        {short}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
 
@@ -256,7 +289,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
               disabled={saving}
               style={[styles.saveBtn, { backgroundColor: theme.main }, saving && { opacity: 0.6 }]}>
               <Text style={styles.saveBtnText}>
-                {saving ? 'Saving…' : isEditMode ? 'Save Changes' : 'Add Activity'}
+                {saving ? 'Saving…' : 'Add Activity'}
               </Text>
             </TouchableOpacity>
 

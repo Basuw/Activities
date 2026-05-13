@@ -20,7 +20,6 @@ import { activityApiService } from '../../services/ActivityApiService';
 import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal';
 import ActivitySaveDetailsModal from './AddActivitySave/ActivitySaveDetailsModal';
 import DelayActionSheet, { DelayOption } from './DelayActionSheet';
-import ActivitySaveDTO from '../../dto/activities/ActivitySaveDTO';
 import ActivitySaveModel from '../../models/Activities/ActivitySaveModel';
 import UserModel from '../../models/UserModel';
 import { CreateActivityDoneDTO } from '../../dto/activities/CreateActivityDoneDTO';
@@ -39,6 +38,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const [model, setModel] = useState(activity);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isSaveEditModalVisible, setSaveEditModalVisible] = useState(false);
+  const [groupSaves, setGroupSaves] = useState<ActivitySaveModel[]>([]);
   const [isDelaySheetVisible, setDelaySheetVisible] = useState(false);
 
   const translateX = useSharedValue(0);
@@ -99,23 +99,25 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
     createOrUpdate(updated);
   };
 
-  const handleOpenSaveEdit = () => {
+  const handleOpenSaveEdit = async () => {
+    const groupId = model.activityDone.activitySave.activitySaveGroupId;
+    if (groupId != null) {
+      try {
+        const saves = await activityApiService.fetchSavesByGroupId(groupId);
+        setGroupSaves(saves);
+      } catch (e) {
+        console.error('Failed to fetch group saves:', e);
+        setGroupSaves([]);
+      }
+    } else {
+      setGroupSaves([]);
+    }
     setSaveEditModalVisible(true);
   };
 
   const handleSaveEditClose = () => {
-    // Retour au modal ActivityDone uniquement
     setSaveEditModalVisible(false);
-  };
-
-  const handleSaveEditSaved = (updated: ActivitySaveDTO) => {
-    setModel(prev => ({
-      ...prev,
-      activityDone: { ...prev.activityDone, activitySave: updated },
-    }));
-    // Fermer les deux : on a terminé l'édition complète
-    setSaveEditModalVisible(false);
-    setEditModalVisible(false);
+    setGroupSaves([]);
   };
 
   /** Convertit l'ActivitySaveDTO courant en ActivitySaveModel pour le modal */
@@ -304,8 +306,12 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
       <ActivitySaveDetailsModal
         isVisible={isSaveEditModalVisible}
         activitySave={currentSaveAsModel()}
+        existingSaves={groupSaves}
         onClose={handleSaveEditClose}
-        onSaved={handleSaveEditSaved}
+        refreshActivities={() => {
+          setSaveEditModalVisible(false);
+          setGroupSaves([]);
+        }}
       />
 
       <DelayActionSheet

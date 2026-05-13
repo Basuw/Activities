@@ -7,6 +7,7 @@ import { formatActivities } from './activities/formatActivities';
 
 import ActivityDTO from '../dto/activities/ActivityDTO';
 import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO';
+import ActivitySaveModel from '../models/Activities/ActivitySaveModel';
 import { CreateActivityDTO } from '../dto/activities/CreateActivityDTO';
 import { CreateActivitySaveDTO } from '../dto/activities/CreateActivitySaveDTO';
 import { UpdateActivitySaveDTO } from '../dto/activities/UpdateActivitySaveDTO';
@@ -57,11 +58,29 @@ class ActivityApiService {
 
   // ─── ActivitySave ──────────────────────────────────────────────────────────
 
-  async createActivitySave(dto: CreateActivitySaveDTO): Promise<void> {
+  async createActivitySave(dto: CreateActivitySaveDTO[]): Promise<void> {
     await this.request(`${this.baseUrl}/save`, {
       method: 'POST',
       body: JSON.stringify(dto),
     });
+  }
+
+  async fetchSavesByGroupId(groupId: number): Promise<ActivitySaveModel[]> {
+    const list = await this.request<any[]>(`${this.baseUrl}/save_by_group/${groupId}`);
+    return list.map(item => new ActivitySaveModel(
+      item.id,
+      item.frequency,
+      item.objective,
+      item.time ? new Date(item.time) : new Date(),
+      item.activity,
+      item.day ?? '',
+      item.notes ?? '',
+      item.user,
+    ));
+  }
+
+  async deleteActivitySave(id: number): Promise<void> {
+    await this.request(`${this.baseUrl}/save/${id}`, { method: 'DELETE' });
   }
 
   async updateActivitySave(id: number, dto: UpdateActivitySaveDTO): Promise<void> {

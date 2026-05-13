@@ -1,34 +1,22 @@
 // @ts-ignore
 import { DEV_API_URL } from '@env';
-import ActivityProgressModel from '../models/Activities/ActivityProgressModel';
-import ActivityDoneDTO from '../dto/activities/ActivityDoneDTO';
-import ActivityDTO from '../dto/activities/ActivityDTO';
-import { formatActivities } from './activities/formatActivities';
-import StatusEnum from '../models/Activities/StatusEnum';
-import DayEnum from '../models/Activities/DayEnum';
 import dayjs from 'dayjs';
-import ActivitySaveModel from '../models/Activities/ActivitySaveModel.ts';
 
-export interface CreateActivityPayload {
-  name: string;
-  description: string;
-  unity: string;
-  icon: string;
-  category: string;
-  userId: number;
-}
+import ActivityProgressModel from '../models/Activities/ActivityProgressModel';
+import { formatActivities } from './activities/formatActivities';
 
-export interface CreateActivitySavePayload {
-  frequency: number;
-  objective: number;
-  notes: string;
-  activity: { id: number };
-  user: { id: number };
-  day?: DayEnum;
-}
+import ActivityDTO from '../dto/activities/ActivityDTO';
+import ActivitySaveDTO from '../dto/activities/ActivitySaveDTO';
+import { CreateActivityDTO } from '../dto/activities/CreateActivityDTO';
+import { CreateActivitySaveDTO } from '../dto/activities/CreateActivitySaveDTO';
+import { UpdateActivitySaveDTO } from '../dto/activities/UpdateActivitySaveDTO';
+import { CreateActivityDoneDTO } from '../dto/activities/CreateActivityDoneDTO';
+import { UpdateActivityDoneDTO } from '../dto/activities/UpdateActivityDoneDTO';
 
 class ActivityApiService {
   private readonly baseUrl: string = DEV_API_URL;
+
+  // ─── HTTP helper ───────────────────────────────────────────────────────────
 
   private async request<T>(url: string, options?: RequestInit): Promise<T> {
     const response = await fetch(url, {
@@ -47,6 +35,44 @@ class ActivityApiService {
     return response.json() as Promise<T>;
   }
 
+  private formatDateTime(date: Date): string {
+    const today = dayjs().format('YYYY-MM-DD');
+    return date.toString() === today
+      ? dayjs().format('YYYY-MM-DD HH:mm:ss')
+      : dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+  }
+
+  // ─── Activity ──────────────────────────────────────────────────────────────
+
+  async fetchAllActivities(userId: number): Promise<ActivityDTO[]> {
+    return this.request<ActivityDTO[]>(`${this.baseUrl}/activity/all/user/${userId}`);
+  }
+
+  async createActivity(dto: CreateActivityDTO): Promise<ActivityDTO> {
+    return this.request<ActivityDTO>(`${this.baseUrl}/activity`, {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  // ─── ActivitySave ──────────────────────────────────────────────────────────
+
+  async createActivitySave(dto: CreateActivitySaveDTO): Promise<void> {
+    await this.request(`${this.baseUrl}/save`, {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async updateActivitySave(id: number, dto: UpdateActivitySaveDTO): Promise<void> {
+    await this.request(`${this.baseUrl}/save/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  // ─── ActivityDone ──────────────────────────────────────────────────────────
+
   async fetchActivitiesDone(date: string, userId: number): Promise<ActivityProgressModel[]> {
     const data = await this.request<any[]>(
       `${this.baseUrl}/day_activities/user_id/${userId}?date=${date}`,
@@ -54,45 +80,26 @@ class ActivityApiService {
     return formatActivities.setActivityDoneObjectListFromString(data);
   }
 
-  async fetchAllActivities(userId: number): Promise<ActivityDTO[]> {
-    return this.request<ActivityDTO[]>(`${this.baseUrl}/activity/all/user/${userId}`);
-  }
-
-  async createActivity(payload: CreateActivityPayload): Promise<ActivityDTO> {
-    return this.request<ActivityDTO>(`${this.baseUrl}/activity`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  }
-
-  async createActivitySave(activitySave: ActivitySaveModel): Promise<void> {
-    await this.request(`${this.baseUrl}/save`, {
-      method: 'POST',
-      body: JSON.stringify({
-        frequency: activitySave.frequency,
-        objective: activitySave.objective,
-        notes: activitySave.notes ?? '',
-        activity: { id: activitySave.activity.id },
-        user: { id: activitySave.user.id },
-        ...(activitySave.day ? { day: activitySave.day } : {}),
-      }),
-    });
-  }
-
-  async postActivityDone(activityDone: ActivityDoneDTO): Promise<ActivityProgressModel> {
-    const doneOn = this.formatDateTime(activityDone.doneOn);
-    const activitySave = activityDone.activitySave;
+  /**
+   * POST /achieve — crée un activityDone.
+   * L'API renvoie une réponse partielle (sans activitySave complet) :
+   * on ré-injecte l'activitySave connu du client dans la réponse.
+   */
+  async createActivityDone(
+    dto: CreateActivityDoneDTO,
+    activitySave: ActivitySaveDTO,
+  ): Promise<ActivityProgressModel> {
     const data = await this.request<ActivityProgressModel>(
-      `${this.baseUrl}/achieve?doneOn=${doneOn}`,
+      `${this.baseUrl}/achieve?doneOn=${this.formatDateTime(dto.doneOn)}`,
       {
         method: 'POST',
         body: JSON.stringify({
-          achievement: activityDone.achievement,
-          mark: activityDone.mark,
-          notes: activityDone.notes,
-          activitySave: { id: activityDone.activitySave.id },
-          status: StatusEnum.COMPLETED,
-          duration: activityDone.duration,
+          achievement: dto.achievement,
+          mark: dto.mark,
+          notes: dto.notes,
+          activitySave: dto.activitySave,
+          status: dto.status,
+          duration: dto.duration,
         }),
       },
     );
@@ -100,32 +107,31 @@ class ActivityApiService {
     return data;
   }
 
-  async patchActivityDone(activityDone: ActivityDoneDTO): Promise<ActivityProgressModel> {
-    const doneOn = this.formatDateTime(activityDone.doneOn);
+  /**
+   * PATCH /achieve/:id — met à jour un activityDone existant.
+   * L'API accepte les champs en query params.
+   */
+  async updateActivityDone(
+    id: number,
+    dto: UpdateActivityDoneDTO,
+    activitySave: ActivitySaveDTO,
+  ): Promise<ActivityProgressModel> {
     const params = new URLSearchParams({
-      achievement: String(activityDone.achievement),
-      status: activityDone.status,
-      mark: String(activityDone.mark),
-      notes: activityDone.notes,
-      doneOn,
+      achievement: String(dto.achievement),
+      status: dto.status,
+      mark: String(dto.mark),
+      notes: dto.notes,
+      doneOn: this.formatDateTime(dto.doneOn),
     });
-    if (activityDone.duration != null) {
-      params.set('duration', String(activityDone.duration));
+    if (dto.duration != null) {
+      params.set('duration', String(dto.duration));
     }
-    const activitySave = activityDone.activitySave;
     const data = await this.request<ActivityProgressModel>(
-      `${this.baseUrl}/achieve/${activityDone.id}?${params}`,
+      `${this.baseUrl}/achieve/${id}?${params}`,
       { method: 'PATCH' },
     );
     data.activityDone.activitySave = activitySave;
     return data;
-  }
-
-  private formatDateTime(date: Date): string {
-    const today = dayjs().format('YYYY-MM-DD');
-    return date.toString() === today
-      ? dayjs().format('YYYY-MM-DD HH:mm:ss')
-      : dayjs(date).format('YYYY-MM-DD HH:mm:ss');
   }
 }
 

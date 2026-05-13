@@ -18,14 +18,13 @@ import Icon from '../../Icon';
 import Slider from '@react-native-community/slider';
 import Svg, { Circle, G } from 'react-native-svg';
 import ActivityDoneDTO from '../../../dto/activities/ActivityDoneDTO';
-import ActivitySaveDTO from '../../../dto/activities/ActivitySaveDTO.tsx';
 
 interface Props {
   isVisible: boolean;
   activity: ActivityDoneDTO;
   onClose: () => void;
   onSave: (updated: ActivityDoneDTO) => void;
-  onEditModel: (updated: ActivitySaveDTO) => void;
+  onEditModel: () => void;
 }
 
 const ActivityDoneEditModal: React.FC<Props> = ({
@@ -112,9 +111,28 @@ const ActivityDoneEditModal: React.FC<Props> = ({
               ACHIEVEMENT
             </Text>
             <View style={[styles.card, {backgroundColor: theme.surface}]}>
-              {/* Progress visual — ring + info */}
+              {/* Progress visual — info gauche, ring droite */}
               <View style={styles.progressRow}>
-                {/* Circular ring (no label inside) */}
+                {/* Left: achievement / objective + % */}
+                <View style={styles.progressInfo}>
+                  <Text style={[styles.progressFraction, { color: isComplete ? theme.green : theme.foreground }]}>
+                    {achievement}
+                    <Text style={[styles.progressObjective, { color: theme.secondary }]}>
+                      {' '}/ {objective} {activity.activitySave.activity.unity}
+                    </Text>
+                  </Text>
+                  <Text style={[styles.progressPercent, { color: isComplete ? theme.green : theme.secondary }]}>
+                    {Math.round(progress)}%
+                  </Text>
+                  {isComplete && (
+                    <View style={styles.completeRow}>
+                      <Icon sfSymbol="checkmark.circle.fill" androidIcon="check-circle" size={13} color={theme.green} />
+                      <Text style={[styles.completeText, { color: theme.green }]}>Complete!</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Right: circular ring */}
                 <Svg width={RING_SIZE} height={RING_SIZE}>
                   <G rotation="-90" origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}>
                     <Circle
@@ -138,25 +156,6 @@ const ActivityDoneEditModal: React.FC<Props> = ({
                     />
                   </G>
                 </Svg>
-
-                {/* Right: achievement / objective unit + % + complete badge */}
-                <View style={styles.progressInfo}>
-                  <Text style={[styles.progressFraction, { color: isComplete ? theme.green : theme.foreground }]}>
-                    {achievement}
-                    <Text style={[styles.progressObjective, { color: theme.secondary }]}>
-                      {' '}/ {objective} {activity.activitySave.activity.unity}
-                    </Text>
-                  </Text>
-                  <Text style={[styles.progressPercent, { color: isComplete ? theme.green : theme.secondary }]}>
-                    {Math.round(progress)}%
-                  </Text>
-                  {isComplete && (
-                    <View style={styles.completeRow}>
-                      <Icon sfSymbol="checkmark.circle.fill" androidIcon="check-circle" size={13} color={theme.green} />
-                      <Text style={[styles.completeText, { color: theme.green }]}>Complete!</Text>
-                    </View>
-                  )}
-                </View>
               </View>
 
               <Slider
@@ -273,8 +272,8 @@ const ActivityDoneEditModal: React.FC<Props> = ({
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // ─── Ring constants ────────────────────────────────────────────────────────────
-const RING_SIZE = 56;
-const STROKE    = 6;
+const RING_SIZE = 48;
+const STROKE    = 5;
 const RADIUS    = (RING_SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 

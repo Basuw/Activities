@@ -15,6 +15,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import ActivityDTO from '../../../dto/activities/ActivityDTO';
 import UserModel from '../../../models/UserModel';
 import { activityApiService } from '../../../services/ActivityApiService';
+import { CreateActivityDTO } from '../../../dto/activities/CreateActivityDTO';
 
 const ICONS = [
   'run-fast', 'swim', 'bike', 'weight-lifter', 'yoga', 'walk',
@@ -58,14 +59,15 @@ const CreateActivityModal: React.FC<Props> = ({ isVisible, user, onClose, onCrea
     setError('');
     setSaving(true);
     try {
-      const created = await activityApiService.createActivity({
+      const dto: CreateActivityDTO = {
         name: name.trim(),
         description: description.trim(),
         unity: unity.trim(),
         icon,
         category,
         userId: user.id,
-      });
+      };
+      const created = await activityApiService.createActivity(dto);
       reset();
       onCreated(created);
     } catch (e) {

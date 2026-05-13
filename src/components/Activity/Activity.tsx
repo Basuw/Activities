@@ -18,8 +18,13 @@ import ActivityDoneDTO from '../../dto/activities/ActivityDoneDTO';
 import StatusEnum from '../../models/Activities/StatusEnum';
 import { activityApiService } from '../../services/ActivityApiService';
 import ActivityDoneEditModal from './EditActivityDone/ActivityDoneEditModal';
+import ActivitySaveDetailsModal from './AddActivitySave/ActivitySaveDetailsModal';
 import DelayActionSheet, { DelayOption } from './DelayActionSheet';
-import ActivitySaveDTO from '../../dto/activities/ActivitySaveDTO.tsx';
+import ActivitySaveDTO from '../../dto/activities/ActivitySaveDTO';
+import ActivitySaveModel from '../../models/Activities/ActivitySaveModel';
+import UserModel from '../../models/UserModel';
+import { CreateActivityDoneDTO } from '../../dto/activities/CreateActivityDoneDTO';
+import { UpdateActivityDoneDTO } from '../../dto/activities/UpdateActivityDoneDTO';
 
 interface ActivityProps {
   activity: ActivityProgressModel;
@@ -33,6 +38,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const theme = useTheme();
   const [model, setModel] = useState(activity);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [isSaveEditModalVisible, setSaveEditModalVisible] = useState(false);
   const [isDelaySheetVisible, setDelaySheetVisible] = useState(false);
 
   const translateX = useSharedValue(0);
@@ -49,17 +55,39 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   // ─── API ───────────────────────────────────────────────────────────────────
 
   const createOrUpdate = async (updated: ActivityDoneDTO) => {
-    updated.doneOn = selectedDay;
-    if (updated.achievement == updated.activitySave.objective) {
-      updated.status = StatusEnum.COMPLETED;
-    } else if (updated.achievement != 0) {
-      updated.status = StatusEnum.IN_PROGRESS;
-    }
+    const status =
+      updated.achievement === updated.activitySave.objective
+        ? StatusEnum.COMPLETED
+        : updated.achievement !== 0
+        ? StatusEnum.IN_PROGRESS
+        : updated.status;
 
     try {
-      const result = updated.id <= 0
-        ? await activityApiService.postActivityDone(updated)
-        : await activityApiService.patchActivityDone(updated);
+      let result: ActivityProgressModel;
+
+      if (updated.id <= 0) {
+        const dto: CreateActivityDoneDTO = {
+          achievement: updated.achievement,
+          mark: updated.mark,
+          notes: updated.notes,
+          activitySave: { id: updated.activitySave.id },
+          status: status as StatusEnum,
+          doneOn: selectedDay,
+          duration: updated.duration,
+        };
+        result = await activityApiService.createActivityDone(dto, updated.activitySave);
+      } else {
+        const dto: UpdateActivityDoneDTO = {
+          achievement: updated.achievement,
+          status,
+          mark: updated.mark,
+          notes: updated.notes,
+          doneOn: selectedDay,
+          duration: updated.duration,
+        };
+        result = await activityApiService.updateActivityDone(updated.id, dto, updated.activitySave);
+      }
+
       setModel(result);
     } catch (e) {
       console.error('Error updating activity:', e);
@@ -71,10 +99,38 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
     createOrUpdate(updated);
   };
 
-  const handleEditActivitySave= (updated: ActivitySaveDTO)=>{
+  const handleOpenSaveEdit = () => {
+    setSaveEditModalVisible(true);
+  };
+
+  const handleSaveEditClose = () => {
+    // Retour au modal ActivityDone uniquement
+    setSaveEditModalVisible(false);
+  };
+
+  const handleSaveEditSaved = (updated: ActivitySaveDTO) => {
+    setModel(prev => ({
+      ...prev,
+      activityDone: { ...prev.activityDone, activitySave: updated },
+    }));
+    // Fermer les deux : on a terminé l'édition complète
+    setSaveEditModalVisible(false);
     setEditModalVisible(false);
-    openEditModal()
-    console.log("test")
+  };
+
+  /** Convertit l'ActivitySaveDTO courant en ActivitySaveModel pour le modal */
+  const currentSaveAsModel = (): ActivitySaveModel => {
+    const s = model.activityDone.activitySave;
+    return new ActivitySaveModel(
+      s.id,
+      s.frequency,
+      s.objective,
+      new Date(),
+      s.activity,
+      '',
+      '',
+      { id: s.userId } as UserModel,
+    );
   };
 
   const handleValidate = () => {
@@ -242,7 +298,14 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
         activity={model.activityDone}
         onClose={() => setEditModalVisible(false)}
         onSave={handleSave}
-        onEditModel={handleEditActivitySave}
+        onEditModel={handleOpenSaveEdit}
+      />
+
+      <ActivitySaveDetailsModal
+        isVisible={isSaveEditModalVisible}
+        activitySave={currentSaveAsModel()}
+        onClose={handleSaveEditClose}
+        onSaved={handleSaveEditSaved}
       />
 
       <DelayActionSheet

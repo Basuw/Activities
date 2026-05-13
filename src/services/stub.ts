@@ -47,9 +47,9 @@ class StubService {
     ];
 
     this.activitiesSaved = [
-      new ActivitySaveModel(1, 3, 5, new Date('2024-01-01'), this.activities[0], this.user),
-      new ActivitySaveModel(2, 5, 30, new Date('2024-01-01'), this.activities[11], this.user),
-      new ActivitySaveModel(3, 7, 10, new Date('2024-01-01'), this.activities[9], this.user),
+      new ActivitySaveModel(1, 3, 5, new Date('2024-01-01'), this.activities[0] as any, '', '', this.user),
+      new ActivitySaveModel(2, 5, 30, new Date('2024-01-01'), this.activities[11] as any, '', '', this.user),
+      new ActivitySaveModel(3, 7, 10, new Date('2024-01-01'), this.activities[9] as any, '', '', this.user),
     ];
 
     this.activitiesDone = [

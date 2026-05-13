@@ -1,4 +1,4 @@
-import ActivityModel from './ActivityModel';
+import ActivityDTO from '../../dto/activities/ActivityDTO';
 import UserModel from '../UserModel';
 
 class ActivitySaveModel {
@@ -6,7 +6,7 @@ class ActivitySaveModel {
   frequency: number;
   objective: number;
   time: Date;
-  activity: ActivityModel;
+  activity: ActivityDTO;
   day: string;
   notes: string;
   user: UserModel;
@@ -16,7 +16,7 @@ class ActivitySaveModel {
     frequency: number,
     objective: number,
     time: Date,
-    activity: ActivityModel,
+    activity: ActivityDTO,
     day: string,
     notes: string,
     user: UserModel

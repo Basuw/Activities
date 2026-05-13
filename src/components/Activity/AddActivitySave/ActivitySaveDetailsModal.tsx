@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Modal,
@@ -14,8 +14,11 @@ import { useTheme } from 'styled-components';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Slider from '@react-native-community/slider';
 import DayEnum from '../../../models/Activities/DayEnum';
-import { activityApiService } from '../../../services/ActivityApiService';
 import ActivitySaveModel from '../../../models/Activities/ActivitySaveModel';
+import ActivitySaveDTO from '../../../dto/activities/ActivitySaveDTO';
+import { activityApiService } from '../../../services/ActivityApiService';
+import { CreateActivitySaveDTO } from '../../../dto/activities/CreateActivitySaveDTO';
+import { UpdateActivitySaveDTO } from '../../../dto/activities/UpdateActivitySaveDTO';
 
 const DAYS: { short: string; full: DayEnum }[] = [
   { short: 'Mo', full: DayEnum.MONDAY },
@@ -31,7 +34,10 @@ interface Props {
   isVisible: boolean;
   activitySave: ActivitySaveModel;
   onClose: () => void;
-  refreshActivities: () => void;
+  /** Mode création (id = 0) — appelé après le POST */
+  refreshActivities?: () => void;
+  /** Mode édition (id > 0) — appelé après le PATCH avec les nouvelles valeurs */
+  onSaved?: (updated: ActivitySaveDTO) => void;
 }
 
 const ActivitySaveDetailsModal: React.FC<Props> = ({
@@ -39,12 +45,24 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
   activitySave,
   onClose,
   refreshActivities,
+  onSaved,
 }) => {
   const theme = useTheme();
-  // Copie locale de l'objet — jamais la prop directement
+  const isEditMode = activitySave.id > 0;
+
   const [draft, setDraft] = useState<ActivitySaveModel>({ ...activitySave });
   const [selectedDays, setSelectedDays] = useState<DayEnum[]>([]);
   const [saving, setSaving] = useState(false);
+
+  // Resync à chaque ouverture
+  useEffect(() => {
+    if (isVisible) {
+      setDraft({ ...activitySave });
+      // En mode édition, pré-sélectionner le jour existant s'il y en a un
+      const existingDay = activitySave.day as DayEnum | undefined;
+      setSelectedDays(existingDay ? [existingDay] : []);
+    }
+  }, [isVisible, activitySave]);
 
   const update = (patch: Partial<ActivitySaveModel>) =>
     setDraft(prev => ({ ...prev, ...patch }));
@@ -57,13 +75,42 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
   const handleSave = async () => {
     setSaving(true);
     try {
-      const days = selectedDays.length > 0 ? selectedDays : [undefined];
-      await Promise.all(
-        days.map(day =>
-          activityApiService.createActivitySave({ ...draft, day: day as DayEnum }),
-        ),
-      );
-      refreshActivities();
+      if (isEditMode) {
+        // ── PATCH ────────────────────────────────────────────────────────────
+        const dto: UpdateActivitySaveDTO = {
+          frequency: draft.frequency,
+          objective: draft.objective,
+          notes: draft.notes,
+          ...(selectedDays.length > 0 && { day: selectedDays[0] }),
+        };
+        await activityApiService.updateActivitySave(draft.id, dto);
+        // Renvoyer un ActivitySaveDTO mis à jour au parent
+        const updated: ActivitySaveDTO = {
+          id: draft.id,
+          frequency: draft.frequency,
+          objective: draft.objective,
+          activity: draft.activity,
+          userId: draft.user.id,
+        };
+        onSaved?.(updated);
+      } else {
+        // ── POST (une requête par jour sélectionné) ───────────────────────
+        const days = selectedDays.length > 0 ? selectedDays : [undefined];
+        await Promise.all(
+          days.map(day => {
+            const dto: CreateActivitySaveDTO = {
+              frequency: draft.frequency,
+              objective: draft.objective,
+              notes: draft.notes ?? '',
+              activity: { id: draft.activity.id },
+              user: { id: draft.user.id },
+              ...(day !== undefined && { day: day as DayEnum }),
+            };
+            return activityApiService.createActivitySave(dto);
+          }),
+        );
+        refreshActivities?.();
+      }
       onClose();
     } catch (e) {
       console.error('Failed to save activity', e);
@@ -97,7 +144,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
                 {draft.activity.name}
               </Text>
               <Text style={[styles.activityCategory, { color: theme.secondary }]}>
-                {draft.activity.category}
+                {isEditMode ? 'Edit activity settings' : draft.activity.category}
               </Text>
             </View>
             <TouchableOpacity
@@ -114,13 +161,24 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
             <View style={[styles.card, { backgroundColor: theme.surface }]}>
               <Text style={[styles.fieldLabel, { color: theme.foreground }]}>Days of the week</Text>
               <Text style={[styles.fieldHint, { color: theme.secondary }]}>
-                Leave empty to track on any day
+                {isEditMode
+                  ? 'Select the day for this activity'
+                  : 'Leave empty to track on any day'}
               </Text>
               <View style={styles.daysRow}>
                 {DAYS.map(({ short, full }) => (
                   <TouchableOpacity
                     key={short}
-                    onPress={() => toggleDay(full)}
+                    onPress={() => {
+                      if (isEditMode) {
+                        // En édition : sélection unique (on change de jour)
+                        setSelectedDays(prev =>
+                          prev.includes(full) ? [] : [full],
+                        );
+                      } else {
+                        toggleDay(full);
+                      }
+                    }}
                     style={[
                       styles.dayBtn,
                       { borderColor: theme.main },
@@ -174,7 +232,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
               <Slider
                 style={styles.slider}
                 minimumValue={1}
-                maximumValue={50}
+                maximumValue={200}
                 step={1}
                 value={draft.objective}
                 onValueChange={v => update({ objective: Math.round(v) })}
@@ -197,7 +255,9 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
               onPress={handleSave}
               disabled={saving}
               style={[styles.saveBtn, { backgroundColor: theme.main }, saving && { opacity: 0.6 }]}>
-              <Text style={styles.saveBtnText}>{saving ? 'Saving…' : 'Save Activity'}</Text>
+              <Text style={styles.saveBtnText}>
+                {saving ? 'Saving…' : isEditMode ? 'Save Changes' : 'Add Activity'}
+              </Text>
             </TouchableOpacity>
 
             <View style={{ height: 40 }} />

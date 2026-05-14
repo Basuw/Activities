@@ -7,4 +7,5 @@ export interface CreateActivitySaveDTO {
   day?: DayEnum;
   activity: { id: number };
   user: { id: number };
+  activitySaveGroup?: { id: number };
 }

@@ -76,6 +76,7 @@ class ActivityApiService {
       item.day ?? '',
       item.notes ?? '',
       item.user,
+      item.activitySaveGroupId ?? null,
     ));
   }
 
@@ -121,6 +122,23 @@ class ActivityApiService {
           duration: dto.duration,
         }),
       },
+    );
+    data.activityDone.activitySave = activitySave;
+    return data;
+  }
+
+  /**
+   * POST /achieve/:id/postpone — passe en POSTPONED + crée la done du lendemain.
+   * Retourne la done courante (POSTPONED) pour mise à jour immédiate de la carte.
+   */
+  async postponeActivityDone(
+    id: number,
+    targetDate: Date,
+    activitySave: ActivitySaveDTO,
+  ): Promise<ActivityProgressModel> {
+    const data = await this.request<ActivityProgressModel>(
+      `${this.baseUrl}/achieve/${id}/postpone?targetDate=${this.formatDateTime(targetDate)}`,
+      { method: 'POST' },
     );
     data.activityDone.activitySave = activitySave;
     return data;

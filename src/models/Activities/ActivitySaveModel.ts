@@ -10,6 +10,7 @@ class ActivitySaveModel {
   day: string;
   notes: string;
   user: UserModel;
+  activitySaveGroupId: number | null;
 
   constructor(
     id: number,
@@ -19,7 +20,8 @@ class ActivitySaveModel {
     activity: ActivityDTO,
     day: string,
     notes: string,
-    user: UserModel
+    user: UserModel,
+    activitySaveGroupId: number | null = null,
   ) {
     this.id = id;
     this.frequency = frequency;
@@ -29,6 +31,7 @@ class ActivitySaveModel {
     this.day = day;
     this.notes = notes;
     this.user = user;
+    this.activitySaveGroupId = activitySaveGroupId;
   }
 }
 

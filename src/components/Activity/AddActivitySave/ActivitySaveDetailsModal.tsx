@@ -53,7 +53,10 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
   const [selectedDays, setSelectedDays] = useState<DayEnum[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // Resync à chaque ouverture : pré-sélectionner les jours déjà en base
+  // Resync uniquement à l'ouverture du modal (isVisible passe à true)
+  // On ne met PAS activitySave/existingSaves dans les deps :
+  // leur référence change à chaque render (new ActivitySaveModel / default [])
+  // ce qui provoquerait une boucle infinie via setSelectedDays.
   useEffect(() => {
     if (isVisible) {
       setDraft({ ...activitySave });
@@ -62,7 +65,8 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
         .filter(Boolean);
       setSelectedDays(days);
     }
-  }, [isVisible, activitySave, existingSaves]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
 
   const update = (patch: Partial<ActivitySaveModel>) =>
     setDraft(prev => ({ ...prev, ...patch }));
@@ -97,43 +101,71 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
     try {
       const calls: Promise<unknown>[] = [];
 
-      // DELETE — jours décochés
-      toDelete.forEach(s => {
-        calls.push(activityApiService.deleteActivitySave(s.id));
-      });
+      // ── Matching : jours décochés ↔ nouveaux jours cochés ──────────────────
+      // Au lieu de DELETE + POST (qui casse le lien ActivityDone),
+      // on PATCH le save existant avec le nouveau jour → le lien est préservé.
+      const pendingDeletes = [...toDelete];
+      const pendingCreates = [...toCreate];
 
-      // POST — nouveaux jours cochés
-      if (toCreate.length > 0) {
-        const createList: CreateActivitySaveDTO[] = toCreate.map(day => ({
+      while (pendingDeletes.length > 0 && pendingCreates.length > 0) {
+        const save    = pendingDeletes.shift()!;
+        const newDay  = pendingCreates.shift()!;
+        calls.push(activityApiService.updateActivitySave(save.id, {
           frequency: draft.frequency,
           objective: draft.objective,
-          notes: draft.notes ?? '',
-          activity: { id: draft.activity.id },
-          user: { id: draft.user.id },
-          day,
+          notes:     draft.notes,
+          day:       newDay,              // jour changé, pas d'ID perdu
         }));
-        calls.push(activityApiService.createActivitySave(createList));
-      } else if (existingSaves.length === 0 && toCreate.length === 0) {
-        // Création sans jour sélectionné
-        const createList: CreateActivitySaveDTO[] = [{
+      }
+
+      // ── PATCH — saves toujours cochés (freq / obj / notes mis à jour) ──────
+      const baseUpdate: UpdateActivitySaveDTO = {
+        frequency: draft.frequency,
+        objective: draft.objective,
+        notes:     draft.notes,
+      };
+      toUpdate.forEach(s =>
+        calls.push(activityApiService.updateActivitySave(s.id, baseUpdate)),
+      );
+
+      // ── POST — nouveaux jours sans save existant à réutiliser ───────────────
+      if (pendingCreates.length > 0) {
+        const groupRef = draft.activitySaveGroupId
+          ? { activitySaveGroup: { id: draft.activitySaveGroupId } }
+          : {};
+        const createList: CreateActivitySaveDTO[] = pendingCreates.map(day => ({
           frequency: draft.frequency,
           objective: draft.objective,
-          notes: draft.notes ?? '',
-          activity: { id: draft.activity.id },
-          user: { id: draft.user.id },
-        }];
+          notes:     draft.notes ?? '',
+          activity:  { id: draft.activity.id },
+          user:      { id: draft.user.id },
+          day,
+          ...groupRef,
+        }));
         calls.push(activityApiService.createActivitySave(createList));
       }
 
-      // PATCH — jours toujours cochés (freq/obj/notes peuvent avoir changé)
-      const updateDto: UpdateActivitySaveDTO = {
-        frequency: draft.frequency,
-        objective: draft.objective,
-        notes: draft.notes,
-      };
-      toUpdate.forEach(s => {
-        calls.push(activityApiService.updateActivitySave(s.id, updateDto));
-      });
+      // ── Création sans aucun jour sélectionné (mode "any day") ───────────────
+      if (existingSaves.length === 0 && selectedDays.length === 0) {
+        const groupRef = draft.activitySaveGroupId
+          ? { activitySaveGroup: { id: draft.activitySaveGroupId } }
+          : {};
+        calls.push(activityApiService.createActivitySave([{
+          frequency: draft.frequency,
+          objective: draft.objective,
+          notes:     draft.notes ?? '',
+          activity:  { id: draft.activity.id },
+          user:      { id: draft.user.id },
+          ...groupRef,
+        }]));
+      }
+
+      // ── DELETE — saves sans remplacement (suppression pure) ─────────────────
+      // Le FK est ON DELETE SET NULL → les ActivityDones conservent leur historique
+      // mais perdent le lien vers le save supprimé.
+      pendingDeletes.forEach(s =>
+        calls.push(activityApiService.deleteActivitySave(s.id)),
+      );
 
       await Promise.all(calls);
       refreshActivities?.();
@@ -265,7 +297,7 @@ const ActivitySaveDetailsModal: React.FC<Props> = ({
               <Slider
                 style={styles.slider}
                 minimumValue={1}
-                maximumValue={200}
+                maximumValue={50}
                 step={1}
                 value={draft.objective}
                 onValueChange={v => update({ objective: Math.round(v) })}

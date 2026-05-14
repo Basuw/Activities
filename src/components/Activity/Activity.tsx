@@ -46,11 +46,15 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
   const progress = model.activityDone.activitySave.objective > 0
     ? Math.round((model.activityDone.achievement / model.activityDone.activitySave.objective) * 100)
     : 0;
-  const isComplete  = progress >= 100 || model.activityDone.status === StatusEnum.COMPLETED;
-  const isCancelled = model.activityDone.status === StatusEnum.CANCELLED;
+  const isComplete   = progress >= 100 || model.activityDone.status === StatusEnum.COMPLETED;
+  const isCancelled  = model.activityDone.status === StatusEnum.CANCELLED;
+  const isPostponed  = model.activityDone.status === StatusEnum.POSTPONED;
 
   // Couleur dominante de la carte
-  const cardColor = isComplete ? theme.green : isCancelled ? theme.orange : theme.main;
+  const cardColor = isComplete  ? theme.green
+                  : isCancelled ? theme.orange
+                  : isPostponed ? theme.yellow
+                  : theme.main;
 
   // ─── API ───────────────────────────────────────────────────────────────────
 
@@ -132,6 +136,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
       '',
       '',
       { id: s.userId } as UserModel,
+      s.activitySaveGroupId,
     );
   };
 
@@ -153,10 +158,63 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
     }
   };
 
-  const handleDelayOption = (option: DelayOption) => {
+  const handleDelayOption = async (option: DelayOption) => {
     setDelaySheetVisible(false);
-    // TODO: implement backend scheduling
-    console.log('delay:', option);
+
+    if (option === '1h') {
+      // TODO: scheduling local notification
+      console.log('Reminder in 1h — not yet implemented');
+      return;
+    }
+
+    if (option === 'tomorrow') {
+      const currentSave = model.activityDone.activitySave;
+      let doneId = model.activityDone.id;
+
+      // ActivityDone synthétique (jamais enregistrée) : la créer d'abord
+      if (doneId <= 0) {
+        try {
+          const dto: CreateActivityDoneDTO = {
+            achievement: 0,
+            mark: 0,
+            notes: '',
+            activitySave: { id: currentSave.id },
+            status: StatusEnum.NOT_STARTED,
+            doneOn: selectedDay,
+            duration: null,
+          };
+          const created = await activityApiService.createActivityDone(dto, currentSave);
+          doneId = created.activityDone.id;
+        } catch (e) {
+          console.error('Error creating activity done before postpone:', e);
+          return;
+        }
+      }
+
+      const tomorrow = new Date(selectedDay);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      try {
+        const result = await activityApiService.postponeActivityDone(
+          doneId,
+          tomorrow,
+          currentSave,
+        );
+        setModel(result);
+      } catch (e) {
+        console.error('Error postponing activity:', e);
+      }
+      return;
+    }
+
+    if (option === 'skip') {
+      // Annuler pour aujourd'hui
+      createOrUpdate({
+        ...model.activityDone,
+        achievement: 0,
+        status: StatusEnum.CANCELLED,
+      });
+    }
   };
 
   const openEditModal  = () => setEditModalVisible(true);
@@ -176,7 +234,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
       } else if (e.translationX < -SWIPE_LEFT_THRESHOLD) {
         runOnJS(handleCancel)();
       }
-      translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
+      translateX.value = withSpring(0, { damping: 20, stiffness: 50 });
     });
 
   // ─── Animated styles ───────────────────────────────────────────────────────
@@ -270,7 +328,7 @@ const Activity: React.FC<ActivityProps> = ({ activity, selectedDay }) => {
                     </Text>
                     <View style={[styles.badge, { backgroundColor: `${cardColor}22` }]}>
                       <Text style={[styles.badgeText, { color: cardColor }]}>
-                        {isCancelled ? '✕' : `${progress}%`}
+                        {isCancelled ? '✕' : isPostponed ? '⏭' : `${progress}%`}
                       </Text>
                     </View>
                   </View>

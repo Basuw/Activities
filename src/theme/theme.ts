@@ -8,6 +8,7 @@ export const darkTheme = {
   purple: '#7C3AED',
   orange: '#EF4444',
   green: '#10B981',
+  yellow: '#F59E0B',
   border: 'rgba(255,255,255,0.08)',
   // Legacy compat
   viewColor: '#1F2937',
@@ -26,6 +27,7 @@ export const lightTheme = {
   main: '#7C3AED',
   orange: '#EF4444',
   green: '#10B981',
+  yellow: '#F59E0B',
   border: 'rgba(0,0,0,0.08)',
   // Legacy compat
   viewColor: '#FFFFFF',
